@@ -1,0 +1,62 @@
+{
+  "_comment": "Default-deny. A vault file is exported only if it matches an include glob and no exclude glob. Paths are relative to the vault root.",
+  "include": [
+    "Active Projects/Theory of Everything Map/**/*.md",
+    "Active Projects/Theory of Everything Map/Views/*.base",
+    "Active Projects/Higher Self/Mind *.md",
+    "Active Projects/Higher Self/Bloodlines of the Illuminati - Breakdown.md",
+    "Active Projects/Higher Self/Younger Dryas source guide.md",
+    "Active Projects/Higher Self/2026-10-01 - AI cross-check challenge - what public data shows about UAP.md",
+    "Active Projects/Higher Self/2026-10-01 - Grusch JRE 2560 live finds.md",
+    "Active Projects/Higher Self/Stream Prep/*13 Families*.md",
+    "Active Projects/Higher Self/Stream Prep/*Trending docket.md",
+    "Active Projects/Higher Self/Stream Prep/*Under the noise*.md",
+    "Active Projects/Higher Self/Stream Prep/evidence-board-astor.html",
+    "Research/2026-09-19 - The case for AI fear narratives and government support.md",
+    "Research/2026-09-25 - *.md",
+    "Research/2026-09-27 - The Vedas deep research.md",
+    "Research/2026-09-28 - Steelman - secret societies hold the most power.md",
+    "Generated/*13 Families and the CIA*.md",
+    "Inbox/*Live finds*.md",
+    "Inbox/*13 Families*.md",
+    "Inbox/*13 families*.md",
+    "Inbox/2026-10-06 - Springmeier bank robbery case evidence.md",
+    "Inbox/2026-10-07 - Epstein official releases.md",
+    "Sources/2026-09-25 - CIA *.md",
+    "Sources/2026-09-25 - Greer *.md",
+    "Sources/2026-09-26 - Bloodlines of Illuminati.md",
+    "Sources/2026-10-01 - NSArchive *.md",
+    "Sources/2026-10-01 - Wikidata snapshot*.md",
+    "Sources/2026-10-05 - FBI Hottel*.md",
+    "Sources/2026-10-07 - Brain atlas neuroscience references.md",
+    "Sources/Epstein Files/Epstein Files Index.md"
+  ],
+  "exclude": [
+    "**/*transcript*",
+    "**/*show critique*",
+    "**/*co-host review*",
+    "Core Memory/**",
+    "Handoffs/**",
+    "Logs/**",
+    "Decisions/**",
+    "Active Projects/Personal Finance/**",
+    "Sources/Epstein Files/**/*.md",
+    "Active Projects/Theory of Everything Map/*experiment*",
+    "Active Projects/Theory of Everything Map/*backfill*",
+    "Active Projects/Theory of Everything Map/*ingest*",
+    "Active Projects/Theory of Everything Map/*proposal*",
+    "Active Projects/Theory of Everything Map/*Interactive brain explorer*",
+    "Active Projects/Theory of Everything Map/*Cosmic atlas design preview*"
+  ],
+  "exclude_exceptions": [
+    "Sources/Epstein Files/Epstein Files Index.md"
+  ],
+  "max_file_bytes": 400000,
+  "strip_sections": [
+    {
+      "file": "Research/2026-09-25 - Joe Dispenza teachings and gamma evidence.md",
+      "heading": "## Founder report versus measurement",
+      "why": "first-person health and experience report"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+name: Theory
+description: Propose a theory or connection for the map
+title: "Theory: "
+labels: ["theory", "needs-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sources are required. Read the README rules first. Do not include private information about anyone.
+  - type: textarea
+    id: claim
+    attributes:
+      label: The theory in one or two sentences
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of claim is this?
+      options:
+        - Documented (a record shows it)
+        - Reported (a named source says it)
+        - Theory or inference
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources
+      description: Links, document names, page numbers or timestamps. At least one.
+    validations:
+      required: true
+  - type: textarea
+    id: against
+    attributes:
+      label: The strongest argument against it
+      description: What would a skeptic say?
+    validations:
+      required: false
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Checks
+      options:
+        - label: This contains no private information about anyone.
+          required: true

@@ -1,0 +1,964 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Living Brain</title>
+<meta name="description" content="Circle of Light's theory of everything, as a living brain. Built from Mastering the Matrix.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Spectral:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06060C; --ink:#EDEBF5; --ink-2:#A9A7B8; --ink-3:#6E6C80;
+  --teal:#5FE0EA; --gold:#E5BA6E; --mint:#8CF5C4; --coral:#FF8A7A; --lav:#B9A7FF; --bone:#F2F0E6;
+  --glass:rgba(14,14,26,.72); --line:rgba(255,255,255,.09);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
+#stage{position:fixed;inset:0;cursor:grab}
+#stage.dragging{cursor:grabbing}
+#stage.pointing{cursor:pointer}
+#labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.lbl{position:absolute;left:0;top:0;transform:translate(-50%,-140%);white-space:nowrap;font-size:11px;font-weight:500;letter-spacing:.02em;color:var(--ink);opacity:0;transition:opacity .35s ease;text-shadow:0 0 12px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.9)}
+.lbl.region{font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--teal)}
+.lbl.core{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.04em}
+.lbl.hot{color:#fff;font-weight:600}
+
+header{position:fixed;top:20px;left:24px;pointer-events:none;max-width:min(520px,60vw)}
+header .eyebrow{font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--teal)}
+header h1{font-family:Spectral,serif;font-weight:400;font-size:30px;line-height:1.1;margin-top:6px}
+header p{margin-top:8px;color:var(--ink-2);font-size:12.5px;line-height:1.5}
+
+.tools{position:fixed;top:20px;right:20px;display:flex;gap:8px;align-items:center}
+.search{position:relative}
+.search input{width:220px;background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:9px 14px 9px 34px;font:500 12.5px Inter,sans-serif;outline:none;transition:border-color .2s,width .3s}
+.search input:focus{border-color:rgba(95,224,234,.55);width:260px}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.7;z-index:2;color:var(--ink-2);pointer-events:none}
+.results{position:absolute;top:42px;right:0;width:280px;background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:14px;padding:6px;display:none;max-height:50vh;overflow:auto}
+.results button{display:flex;gap:8px;align-items:center;width:100%;text-align:left;background:none;border:0;color:var(--ink);padding:8px 10px;border-radius:9px;font:500 12.5px Inter,sans-serif;cursor:pointer}
+.results button:hover,.results button.on{background:rgba(255,255,255,.06)}
+.btn{background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:9px 14px;font:600 12px Inter,sans-serif;cursor:pointer;display:flex;gap:7px;align-items:center;transition:border-color .2s,background .2s}
+.btn:hover{border-color:rgba(95,224,234,.5)}
+.btn.on{background:rgba(95,224,234,.14);border-color:rgba(95,224,234,.6);color:var(--teal)}
+
+.legend{position:fixed;left:20px;bottom:20px;display:flex;flex-wrap:wrap;gap:6px;max-width:min(560px,calc(100vw - 40px))}
+.chip{display:flex;gap:7px;align-items:center;background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:999px;padding:6px 11px;font:500 11.5px Inter,sans-serif;color:var(--ink-2);cursor:pointer;transition:all .2s}
+.chip:hover,.chip.on{color:var(--ink);border-color:rgba(95,224,234,.5)}
+.dot{width:7px;height:7px;border-radius:50%;flex:none;box-shadow:0 0 8px currentColor}
+
+.keys{position:fixed;right:20px;bottom:20px;display:flex;gap:10px;font-size:11px;color:var(--ink-3)}
+.keys span{display:flex;gap:5px;align-items:center}
+
+#hint{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);font-size:12px;color:var(--ink-2);background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);padding:8px 14px;border-radius:999px;transition:opacity .8s;pointer-events:none}
+
+#tip{position:fixed;left:0;top:0;pointer-events:none;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:12px;padding:9px 12px;max-width:260px;opacity:0;transform:translate(14px,14px);transition:opacity .15s}
+#tip .t{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:600}
+#tip .n{font-size:13px;font-weight:600;margin-top:3px;line-height:1.35}
+
+#panel{position:fixed;top:72px;right:20px;bottom:20px;width:390px;background:var(--glass);backdrop-filter:blur(22px) saturate(1.2);-webkit-backdrop-filter:blur(22px) saturate(1.2);border:1px solid var(--line);border-radius:20px;transform:translateX(calc(100% + 40px));transition:transform .55s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;overflow:hidden}
+#panel.open{transform:none}
+#panel .top{padding:20px 22px 14px;border-bottom:1px solid var(--line);position:relative}
+#panel .kind{font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;display:flex;gap:8px;align-items:center}
+#panel h2{font-family:Spectral,serif;font-weight:400;font-size:24px;line-height:1.2;margin-top:8px;padding-right:20px}
+#panel .status{display:inline-flex;margin-top:12px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--ink-2)}
+#panel .close{position:absolute;top:16px;right:16px;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--ink-2);cursor:pointer;font-size:16px;line-height:1}
+#panel .close:hover{color:var(--ink);border-color:rgba(255,255,255,.3)}
+#panel .body{padding:16px 22px 22px;overflow:auto;flex:1}
+#panel .summary{font-size:14px;line-height:1.6;color:var(--ink)}
+#panel h3{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin:22px 0 10px}
+.quote{border-left:2px solid var(--teal);padding:2px 0 2px 14px;margin-bottom:14px}
+.quote p{font-family:Spectral,serif;font-style:italic;font-size:15.5px;line-height:1.5;color:var(--ink)}
+.quote small{display:block;margin-top:6px;font-size:11px;color:var(--ink-3);font-family:Inter,sans-serif;font-style:normal}
+.note{font-size:12.5px;line-height:1.55;color:var(--ink-2);background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+.links{display:flex;flex-wrap:wrap;gap:6px}
+.links button{display:flex;gap:7px;align-items:center;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 11px;font:500 12px Inter,sans-serif;cursor:pointer;transition:all .2s;text-align:left}
+.links button:hover{border-color:rgba(95,224,234,.5);background:rgba(95,224,234,.08)}
+.step{display:flex;justify-content:space-between;gap:8px;padding:12px 22px;border-top:1px solid var(--line)}
+.step button{flex:1}
+
+@media (max-width:760px){
+  header h1{font-size:22px} header p{display:none}
+  .tools{top:auto;bottom:calc(env(safe-area-inset-bottom) + 16px);right:16px;left:16px;justify-content:space-between}
+  .search input{width:100%} .search{flex:1} .search input:focus{width:100%}
+  .results{top:auto;bottom:44px;left:0;right:auto;width:100%}
+  .legend{display:none} .keys{display:none} #hint{bottom:70px;white-space:nowrap}
+  #panel{top:auto;left:8px;right:8px;bottom:8px;width:auto;height:62vh;transform:translateY(calc(100% + 20px))}
+}
+@media (prefers-reduced-motion:reduce){#panel,.lbl,#tip{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<div id="labels"></div>
+
+<header>
+  <div class="eyebrow">Theory of Everything</div>
+  <h1>Living Brain</h1>
+  <p id="sub">Master your mind, master reality.</p>
+</header>
+
+<div class="tools">
+  <div class="search">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" placeholder="Search the brain" autocomplete="off">
+    <div class="results" id="results"></div>
+  </div>
+  <button class="btn" id="tourBtn" title="Guided tour (T)"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg><span>Tour</span></button>
+  <button class="btn" id="homeBtn" title="Whole brain (Esc)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg></button>
+</div>
+
+<div class="legend" id="legend"></div>
+<div class="keys"><span>Drag to turn</span><span>Scroll to zoom</span><span>← → to walk</span></div>
+<div id="hint">Hover any light to preview it. Click to fly in.</div>
+<div id="tip"><div class="t"></div><div class="n"></div></div>
+
+<aside id="panel" aria-live="polite">
+  <div class="top">
+    <div class="kind"><span class="dot"></span><span class="kindtxt"></span></div>
+    <h2></h2>
+    <span class="status"></span>
+    <button class="close" aria-label="Close">×</button>
+  </div>
+  <div class="body"></div>
+  <div class="step"><button class="btn" id="prevBtn">← Previous</button><button class="btn" id="nextBtn">Next →</button></div>
+</aside>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ---------------- DATA (from Living brain experiment 1, 2026-10-08) ---------------- */
+const TYPES = {
+  core:{label:'Core idea',color:'#E5BA6E'},
+  region:{label:'Region',color:'#5FE0EA'},
+  principle:{label:'Principle',color:'#5FE0EA'},
+  practice:{label:'Practice',color:'#8CF5C4'},
+  tension:{label:'Open tension',color:'#FF8A7A'},
+  resolved:{label:'Resolved tension',color:'#C9B6FF'},
+  question:{label:'Open question',color:'#B9A7FF'},
+  episode:{label:'Episode',color:'#F2F0E6'},
+  story:{label:'History and power',color:'#F0C987'},
+  experiment:{label:'Personal experiment',color:'#8CF5C4'}
+};
+// x = left/right, y = up, z = front(+)/back(-)
+const REGIONS = [
+  {id:'consciousness',name:'Consciousness',pos:[0.05,0.92,-0.05],color:'#7FE9F1'},
+  {id:'identity',name:'Identity',pos:[-0.62,0.55,0.78],color:'#5FE0EA'},
+  {id:'practice',name:'Practice',pos:[0.6,0.78,0.12],color:'#8CF5C4'},
+  {id:'experience',name:'Experience',pos:[1.02,0.05,0.2],color:'#9FF0D0'},
+  {id:'history',name:'History and power',pos:[-1.02,0.02,-0.15],color:'#F0C987'},
+  {id:'traditions',name:'Traditions and cosmology',pos:[0.0,0.4,-1.08],color:'#B9A7FF'},
+  {id:'science',name:'Science and reality',pos:[0.58,0.45,0.92],color:'#86D8FF'},
+  {id:'shadow',name:'Light and shadow',pos:[0.0,-0.12,0.05],color:'#C9B6FF'}
+];
+const Q = (q,src)=>({q,src});
+const NODES = [
+  {id:'thesis',type:'core',title:'Master your mind, master reality',regions:['consciousness','identity','shadow'],status:'The center of the map',
+   summary:'Your inner world shapes your outer world. Master it by returning to awareness, choosing what you feed your mind, and seeing which beliefs were handed to you. Then apply it, so the individual evolves and the collective follows.',
+   quotes:[Q('My inner world shapes my outer world, and everything in my life serves my growth.','My daily creed. Said every stream'),Q('If you can master your mind, you can master reality.','Circle of Light'),Q('How can you actually evolve as an individual so we can evolve as a collective?','MTM71 · 2:23:47')],
+   note:'Every quote on this map is word for word from the streams, with the episode and time.'},
+
+  {id:'P1',type:'principle',title:'Return to being. Meditation comes first',regions:['consciousness','practice'],status:'Growing · in all 5 episodes',
+   summary:'Meditation is the most important practice. Every stream opens with it.',
+   quotes:[Q('Just being able to return back to being has been super beneficial, and I think meditation is the most important thing we can be doing on this planet.','MTM63 · 80:53'),Q("Let's meditate.",'MTM65 · 0:00:04')],
+   note:'No outside study has been checked for this yet. "Consciousness is fundamental" is Rupert Spira\'s view, a philosophical position, not evidence.'},
+  {id:'P2',type:'principle',title:'Most beliefs were handed to us',regions:['identity','history'],status:'Growing · 6 episodes',
+   summary:'A belief you defend stops you from growing. Most of what we believe was given to us.',
+   quotes:[Q('Beliefs keep you limited. You\'re tied to this belief instead of being interested in growing.','MTM63 · 70:43, after Thomas Campbell'),Q("That's a big reason why we have our overall beliefs because they've been given to us.",'MTM70 · 1:48:02'),Q("Just narratives that we've been taught through history that just aren't accurate. Bring a lot of awareness to that.",'MTM71 · 2:23:47'),Q("We've been programmed to think we need something outside of ourselves.","MTM73 \u00b7 1:08:27"),Q("That's what I mean. Like we're in the allegory of the cave, where we are just going along, complicit with the system that we just we didn't decide. We just woke up and was like told, \"Hey, be a Christian, work a nine to five.\" All of these ideas were given to us. We didn't make those decisions. So, in order to change, we have to wake up. And start to make our own decisions instead of being told what to do.","MTM32 \u00b7 1:19:39"),Q("It's crazy how the first four years of your life hardwire your psyche. Into believing something that may not be true, you hear this a lot.","MTM57 \u00b7 1:23:42")],
+   note:'Checked: the idea really is Thomas Campbell\'s (My Big TOE, 2003). That confirms who said it, not that it is true.'},
+  {id:'P3',type:'principle',title:'We are all one being',regions:['consciousness','traditions'],status:'Growing · 4 episodes',
+   summary:'Other people are you, playing a different role. Knowing that unites us where religion divides.',
+   quotes:[Q("We are all one being. We're all God. Having a human experience.",'MTM63 · 40:42'),Q("Religion divides us. Knowing that we're all one being unites us.",'MTM63 · 110:37'),Q("We're all God at the end of the day. So it's like we all came from one source. We are all one source.","MTM59 \u00b7 1:10:07"),Q("I got to stop you there, Joe. Everything is God, including you, including myself, including the floor I'm standing on. Everything is God.","MTM45 \u00b7 1:15:57"),Q("There is no separation between us and God. We are God. God is everything.","MTM38 \u00b7 0:48:30")],
+   note:'A spiritual claim. It rests on experience, not research.'},
+  {id:'P4',type:'principle',title:'What you feed your mind becomes you',regions:['identity','science'],status:'Growing · 3 episodes',
+   summary:'Consume less, create more. Whoever controls the feed controls the story.',
+   quotes:[Q('The more you put something in your brain, it does make you more emotionally tied to it and more extreme.','MTM70 · 0:42:52'),Q('If you control the algorithm, you control the narrative.','MTM70 · 0:44:50'),Q('What we need to do as a community is become less reliant on these algorithms.','MTM70 · 1:57:50'),Q("Our consciousness, our awareness, creates reality. If we all believe one thing, it becomes true, regardless of what it is.","MTM56 \u00b7 0:27:16"),Q("No, that's a fact. So where you put your attention is the most important thing you can do.","MTM62 \u00b7 2:05:13")],
+   note:'The "feed makes you extreme" idea came from the guest and has not been checked.'},
+  {id:'P5',type:'principle',title:'No one should govern your mind',regions:['history','identity'],status:'Growing · 4 episodes',
+   summary:"If you don't create your reality, someone else's plan will.",
+   quotes:[Q("There's no right way to govern people's minds. There's no right way to control people.",'MTM70 · 1:10:21'),Q("It's time for us to wake up and take control of the reality we've been mindlessly creating.",'MTM70 · 1:42:44'),Q("They're using us to create the world that they are imagining.",'MTM71 · 2:20:26'),Q("I think moral of the story is we create reality. So be mindful of the reality you create. Don't let nobody else create it for you.","MTM55 \u00b7 1:29:12"),Q("if you can control your mind, you can control reality. And all of these elites are trying to control your mind so they can control reality through you.","MTM53 \u00b7 1:19:59")],
+   note:'The principle stands on self-governance. The claims about a handful of families running things are still unproven.'},
+  {id:'P6',type:'principle',title:'Move every day, even on rest days',regions:['practice','experience'],status:'Growing · in all 5 episodes',
+   summary:'Gentle still counts. A rollout or light yoga keeps you moving.',
+   quotes:[Q('Every day, you should be moving, even on rest days. Like something like a rollout.','MTM70 · 0:28:10'),Q("But I'm always moving.",'MTM65 · 0:30:51'),Q("You're still doing something.",'MTM71 · 1:05:42'),Q("Let me get this quick rollout in.",'MTM73 · 0:24:33')],
+   note:'My most repeated idea so far.'},
+  {id:'P7',type:'principle',title:'Change at a pace you can live with',regions:['practice','shadow'],status:'Growing · 2 episodes',
+   summary:'Move toward what you believe, even if it is slow.',
+   quotes:[Q("It's gonna be a slow transition, but I'll get there eventually.",'MTM65 · 1:01:02'),Q("the goal is just to be one percent better every day.","MTM22 \u00b7 0:01:00")],
+   note:'A personal ethic, not a statistic.'},
+
+  {id:'PR1',type:'practice',title:'I Am God mantra',regions:['traditions','practice'],status:'Every stream',summary:'Grounded in truth, guided by peace, aligned with purpose. Said to open every stream.',quotes:[Q('I am God, grounded in truth, guided by peace, and aligned with purpose.','MTM71 · 0:04:11')]},
+  {id:'PR2',type:'practice',title:'Morning meditation',regions:['practice','consciousness'],status:'Every stream',summary:'Meditate before the show starts.',quotes:[Q('Super beneficial.','MTM63 · 80:53'),Q("That's exactly how I meditate, twice a day, twenty minutes. Listen to some binaural beats, some frequencies. I've been listening to some gamma.","MTM56 \u00b7 1:01:09")]},
+  {id:'PR3',type:'practice',title:'Ask: what is aware of my experience?',regions:['consciousness'],status:'Proposed',summary:"Rupert Spira's practice. My answer: \"Amen.\"",quotes:[Q('Take a step back. What is it that is aware of my experience?','Rupert Spira, MTM63 · 108:27'),Q("That ain't you. You're the observer","MTM56 \u00b7 0:28:29")]},
+  {id:'PR4',type:'practice',title:'"This is me meeting me"',regions:['identity','experience'],status:'Proposed',summary:"For meeting someone new. A co-host offered it, and I said \"It's fire.\"",quotes:[Q("it's easy to say you're healed until you. Go to whatever triggered you and see if you have the same response.","MTM51 \u00b7 0:25:23"),Q("So even when I'm triggered and my body signals a emotional response, I just take a deep breath.","MTM56 \u00b7 0:30:24")]},
+  {id:'PR5',type:'practice',title:'The rollout',regions:['practice','experience'],status:'My routine',summary:'Calf, back of the knee, hamstring, then glute, IT band, quad and hip flexor.',quotes:[Q('Feel where that tightness or soreness is, where it hurts the most, and roll that out. Then I work my way up to the glute.','MTM65 · 0:26:28')]},
+  {id:'PR6',type:'practice',title:'Move on rest days',regions:['practice'],status:'My routine',summary:'A rollout or light yoga on off days.',quotes:[Q('Ooh, I felt good.','MTM71 · 1:05:10')]},
+  {id:'PR7',type:'practice',title:'Consume less, create more',regions:['identity','science'],status:'In progress',summary:'Make your own content instead of only taking it in.',quotes:[Q("Once I was able to channel that energy into creating, making content, building with AI, streaming, that's when I had a release, and now I feel more connected to the universe as a result.","MTM56 \u00b7 1:06:31")]},
+  {id:'PR8',type:'practice',title:'When it is loud, ask what is quiet',regions:['history','science'],status:'My question',summary:'When the feed is noisy, ask what is happening out of sight.',quotes:[Q('What are they doing now while it\'s so noisy?','MTM70 · 1:51:03')]},
+  {id:'PR9',type:'practice',title:'Ask who drafted it first',regions:['history','identity'],status:'From MTM71',summary:'Pick one thing you repeat as fact and ask who wrote it first.',quotes:[Q("we we've been given the translations or the interpretations of these corrupt organizations and the powers that be. Instead of us, hey, let's let's actually go read the shit ourselves.","MTM67 \u00b7 2:47:10")]},
+
+
+  {id:'T1',type:'tension',title:'Test the claim, or back it?',regions:['science','history'],status:'Open',summary:'I want claims pressure-tested, and I also ask the crew to build the guest\'s case. The crew needs one clear rule for when to do which.',quotes:[Q("Can we pressure test this?",'MTM63 · 102:32'),Q("We should be helping provide evidence for their claims, not refuting everything they're saying.",'MTM65 · 1:34:18'),Q("I am open to anything, but I am also got to be skeptical of the information behind it.","MTM73 \u00b7 1:03:16"),Q("I think one thing I want to teach y'all how to be is be open-minded, but be skeptical at the exact same time. So, two things can be true, right?","MTM66 \u00b7 0:47:00"),Q("It's important to be open - minded and skeptical at the exact same time.","MTM60 \u00b7 0:59:00")]},
+  {id:'T2',type:'resolved',title:'No evil, and yet hidden power',regions:['shadow','history'],status:'Resolved · Oct 8',summary:'Not a contradiction. We decide what we call evil and what we call illusion, because perception creates reality. Naming who holds power fits inside that.',
+   quotes:[Q("We define what is evil and what's an illusion. Our perception creates reality, so that's what I mean by 'there's no evil. It's an illusion.'",'Circle of Light, October 8'),Q("Everything else is an illusion.",'MTM63 · 42:11'),Q("the goal here is not to make people afraid because, hey, this shit is a video game. Like, this shit ain't really that deep. But at the same time, it's important to be aware of the video game because people are playing it a lot different than you are.","MTM54 \u00b7 0:42:20")]},
+  {id:'T3',type:'tension',title:'Free minds from the algorithm, or play it?',regions:['science','identity'],status:'Open',summary:'I want people less reliant on algorithms, and I use catchy titles to reach them. Medicine with the candy.',quotes:[Q('We got to give the medicine with the candy.','MTM70 · 1:53:39'),Q("you can use the algorithm to your benefit","MTM51 \u00b7 1:17:55")]},
+
+  {id:'Q1',type:'question',title:'Does consciousness evolve?',regions:['consciousness','science'],status:'Open',summary:'Spira says no. Campbell says yes. Still asking.',quotes:[Q('So what does that mean exactly?','MTM63 · 103:11')]},
+  {id:'Q2',type:'question',title:'How do you push truth without the algorithm owning you?',regions:['science','history'],status:'Open',summary:'From MTM70.',quotes:[Q('As a content creator who is looking to push the truth, how does one go about that without falling victim to them owning the algorithm?','MTM70 · 1:37:11'),Q("it's gonna sacrifice the numbers because the algorithm it's not algorithm friendly. It's four or five things at once, but at the end of the day, that's not my mission.","MTM56 \u00b7 1:09:38")]},
+  {id:'Q3',type:'question',title:'Where does mastering the mind start?',regions:['consciousness','identity'],status:'Open',summary:'With stillness, with what you feed it, or with questioning what you were taught?',quotes:[Q("the whole everything we believe is upside down. Yeah, what we put in our bodies, what we put in our mind, what we believe, what we feel, it's all upside down.","MTM67 \u00b7 2:44:22"),Q("In my journal, ten times, if you master your mind, you can create reality.","MTM55 \u00b7 0:42:53")]},
+  {id:'Q4',type:'question',title:'How does exposing history become practice?',regions:['history','practice'],status:'Open',summary:"MTM73 gave a first answer: the death-and-rebirth story, lived as a rebuild from the studs (P8).",quotes:[Q('How can you actually apply this information?','MTM71 · 2:23:47'),Q("we're just trying to wake you up. You feel me? Like at the end of the day, this shit. Is a video game, and they're just playing. They're just the evil characters in it.","MTM53 \u00b7 1:09:21"),Q("there's a ying and the yang to all of these ancient mysteries. So they're using it for power. We should be using it to bring light and love into the world.","MTM59 \u00b7 2:12:30")]},
+
+  {id:'S1',type:'story',title:'The Bundys: the pen, not the blood',regions:['history'],status:'On the record',summary:'Harvey Bundy ran the atomic bomb paperwork. McGeorge drafted the article that defended Hiroshima. William\'s bureau drafted the Vietnam war resolution before Tonkin.',quotes:[Q('They didn\'t drop the bomb. They wrote the story.','MTM71')],note:'Documented. Ted Bundy is not part of this family; Bundy was his stepdad\'s name.'},
+  {id:'S2',type:'story',title:'Skull and Bones',regions:['history','traditions'],status:'On the record',summary:'Fifteen Yale seniors a year, about 800 living members. A death and rebirth initiation, and secrets that bind members for life.',quotes:[Q('That should tell you everything you need to know about there being a red side and a blue side.','MTM71 · Bush vs Kerry')],note:'The Geronimo skull story is unproven.'},
+  {id:'S3',type:'story',title:'Who wrote the Hiroshima story',regions:['history','shadow'],status:'On the record',summary:'The "over a million casualties" line comes from a 1947 Harper\'s article signed by Stimson and drafted by McGeorge Bundy.',quotes:[Q("There's no justification for dropping bombs.",'MTM71 · 1:41:06')],note:'The 1946 Strategic Bombing Survey said Japan would likely have surrendered by end of 1945. Some wartime studies did project very high invasion casualties.'},
+  {id:'S4',type:'story',title:'Tonkin: the permission slip came first',regions:['history'],status:'On the record',summary:'A war resolution was drafted in June 1964. The August 4 attack never happened, per the NSA\'s own historian. Congress passed it 88 to 2 and 416 to 0.',quotes:[]},
+  {id:'S5',type:'story',title:'Who controls money creation',regions:['history','science'],status:'Guest claim',summary:'Simon Dixon\'s case: real power sits with whoever controls how money gets created, not presidents.',quotes:[Q("Money is not real. Let me tell you that because if I can just create it. Then I have an unlimited amount. There is no cap.","MTM32 \u00b7 0:15:04")],note:'From MTM70. The Fort Knox "double-booked" and BIS "own army" claims were fact-checked wrong.'},
+  {id:'S6',type:'story',title:'The 13 families',regions:['history','shadow'],status:'Theory, unproven',summary:'Fritz Springmeyer\'s claim. The series tests it family by family: the Astors, the Bundys, next the Collins.',quotes:[Q('Families that are in power use countries to wage war, and they hide in the shadows while they reap all the benefits.','MTM71 · 2:12:18'),Q("I think that's my goal with this platform is to show you guys how everything is all connected, from the thirteen families to transnational capital to the wars and um. Iran to the history we are taught, whether it's academia, archaeology, through the pharmaceutical companies, through aliens and disclosure, all of these things are connected because there's only 13 families that actually run the world.","MTM62 \u00b7 2:16:46")],note:"The access and the paper trail are documented. One hidden family running it all is not. Crew (MTM61, MTM62): the money networks are documented; the exact thirteen traces to Springmeier's own notes, and his book is mostly unsourced."},
+
+  {id:'E63',type:'episode',title:'MTM63 · Rupert Spira: You Were Never Born',regions:['consciousness','traditions'],status:'Ingested',summary:'Consciousness, oneness, and the case for having no beliefs.',quotes:[]},
+  {id:'E65',type:'episode',title:"MTM65 · Kip Andersen's Christspiracy",regions:['traditions','experience'],status:'Ingested',summary:'Food, conscience, and changing at a pace you can live with.',quotes:[]},
+  {id:'E70',type:'episode',title:'MTM70 · Simon Dixon: Who Really Runs the World?',regions:['history','science'],status:'Ingested',summary:'Money creation, the algorithm, and taking back your mind.',quotes:[]},
+  {id:'E71',type:'episode',title:'MTM71 · Ghostwriters of the Century',regions:['history'],status:'Ingested',summary:'The Bundys, Skull and Bones, Hiroshima and Tonkin. The theory of everything named on air.',quotes:[]},
+
+  {id:"P8",type:"principle",title:"Rebuild yourself from the studs",regions:["identity", "traditions", "experience"],status:"Growing · 2 episodes",
+   summary:"The old initiations act out a death and a rebirth. I lived one: after a hard stretch I rebuilt myself on purpose, as the exact person I wanted to be. That is how the esoteric stories turn into practice.",
+   quotes:[Q("I had to rebuild myself from the studs, right?","MTM73 \u00b7 0:45:54"),Q("I think that's a perfect example of how we can learn from these this esoteric wisdom, and apply it.","MTM73 \u00b7 0:46:32"),Q("What was most important during that time was recreating. The exact person I wanted to be, and you don't realize that until you're deep into it.","MTM73 \u00b7 0:47:48"),Q("getting back to drawing the things I used to love as a kid before the world told me who I was.","MTM48 \u00b7 0:21:19")],
+   note:"Lived experience, not research. I told the fuller story on MTM73 and in Field Notes."},
+  {id:"P9",type:"principle",title:"Stop editing yourself",regions:["identity", "practice"],status:"Seed \u00b7 1 episode",
+   summary:"Other people's opinions edit you like a rough draft until you are not the same paper. Not caring what they think is the first step to mastering yourself, and so the matrix.",
+   quotes:[Q("That is probably the first step in the journey of mastering yourself, which is ultimately mastering the matrix.","MTM73 \u00b7 1:07:53"),Q("Somebody that's not deep rooted will probably start to edit themselves","A guest, MTM73 \u00b7 1:06:02")],
+   note:"The rough-draft picture is a guest's; I agreed and made it one of my ten commandments (FOPO, after Michael Gervais's book)."},
+  {id:"P10",type:"principle",title:"Own your awareness",regions:["consciousness", "science", "history"],status:"Growing · 2 episodes",
+   summary:"Attention is energy, and they have most of ours. Whoever holds your data can predict and steer your future, so awareness comes first. The same technology can be turned back around.",
+   quotes:[Q("Like that's our most important commodity. Everything else stems from that.","MTM73 \u00b7 1:14:44"),Q("They have all of our attention and all of our energy, and they're using it against us.","MTM73 \u00b7 1:14:44"),Q("They can not only predict your future, but they can manipulate your future","MTM73 \u00b7 1:15:43"),Q("The same technology they're using against us, we can be using against them.","MTM73 \u00b7 1:04:04"),Q("Exactly, our consciousness, our awareness \u2014 that's the most important thing you have. That's what they're trying to get from you, whether it's through Fanduel, TikTok, IG, OnlyFans.","MTM31 \u00b7 2:24:15")],
+   note:"\"A surveillance state that is almost complete\" is my read, not a checked fact."},
+  {id:"P11",type:"principle",title:"Be the person, not the goal",regions:["identity", "practice", "consciousness"],status:"Growing · 3 episodes",
+   summary:"Behind every goal is an identity. Ask what the version of you who already did it does every day, and be that now. Our mind creates reality.",
+   quotes:[Q("If you have a goal, there's an identity of what you look like, the version of you that accomplished said goal.","MTM73 \u00b7 1:50:17"),Q("What does he do on a daily basis? What does he embody? How does he think? And just be that","MTM73 \u00b7 1:50:17"),Q("Our mind creates reality.","MTM73 \u00b7 1:49:42"),Q("So, if you can stop yourself from wanting something, you can attract everything.","MTM38 \u00b7 0:07:42"),Q("I disagree with that. I feel like for me, whatever you're chasing, you can give yourself internally. So it's like if you're chasing happiness, you could be happy without thinking there's something attached to that in this physical realm.","MTM57 \u00b7 2:17:10")]},
+  {id:"P12",type:"principle",title:"Each generation carries more who wake up",regions:["consciousness", "traditions"],status:"Growing · 3 episodes",
+   summary:"Only a few people each generation decode the matrix, and I see that number growing: a new renaissance, with old teachings coming back in new language.",
+   quotes:[Q("I think each generation is carrying more and more of those people.","MTM73 \u00b7 0:58:22"),Q("I think we are going back to more of a renaissance age where there's going to be a lot more thought leaders.","MTM73 \u00b7 0:58:22"),Q("It's a few people every generation that like decode the matrix.","A guest, after Nipsey Hussle, MTM73 \u00b7 0:56:52"),Q("I could definitely see myself as a thought leader, as someone who provides my generation and the generations coming after me, just grounding and helping them wake up out of the matrix, so we can master it together.","MTM57 \u00b7 2:38:09"),Q("Yeah, that's what our ancestors did. You feel me? They were think about the slaves that were. They knew that they're just surviving. To To give it to the next generation in hopes that they break out of bondage.","MTM67 \u00b7 2:54:25")],
+   note:"Hope and outlook, not a measured trend."},
+  {id:"P13",type:"principle",title:"Build the community first",regions:["practice", "experience"],status:"Growing · 4 episodes",
+   summary:"Build around people who already show up, grow by word of mouth, and use content as the arena AI lets you scale. Farm more than you hunt.",
+   quotes:[Q("Built the app around the community, not the other way around.","MTM73 \u00b7 3:07:37"),Q("You guys are going to be farming more than you're hunting","MTM73 \u00b7 2:58:48"),Q("Content is like the biggest arena you could scale in, and probably the most important one using AI.","MTM73 \u00b7 2:42:30"),Q("we're all just cogs in a wheel at the end of the day. So we need to rise up together as one.","MTM61 \u00b7 2:36:47"),Q("What's most important is for us to band together. We need to recreate tribes and communities, strong community","MTM38 \u00b7 0:44:44"),Q("It's not a cult, but a off - grid community that is self - reliant","MTM46 \u00b7 1:37:51")],
+   note:"From the Saturday mastermind. Business details stay with the people building them."},
+  {id:"PR10",type:"practice",title:"Be the one who already did it",regions:["practice", "identity"],status:"From MTM73",
+   summary:"Pick one goal. Write down what the version of me who hit it does every day, does not do anymore, and how he thinks. Live that today.",
+   quotes:[Q("What does he embody? How does he think?","MTM73 \u00b7 1:50:17"),Q("So, whatever you guys feel called in your heart to be, you are already that. You're just remembering who you are.","MTM57 \u00b7 2:37:10"),Q("anybody who's working on mastering the matrix understands that it's hard when you first start, and you realize how many people are resistant to that mindset and cling to what they know","MTM38 \u00b7 0:31:45"),Q("stop focusing on doing and start focusing on being. Like, what do you want? What is the version of you look like that has that","MTM51 \u00b7 0:41:07")]},
+  {id:"S7",type:"story",title:"Lost the throne, kept the money",regions:["history"],status:"On the record",
+   summary:"Italy took Rome in 1870 and the Pope lost his land. In 1929 Mussolini's Lateran deal gave the Vatican its own state plus about 750 million lire in cash and a billion in bonds. A banker, Bernardino Nogara, invested it, and it seeded the modern Vatican fortune.",
+   quotes:[Q("Yeah, why give him all that damn cash?","MTM73 \u00b7 0:37:33"),Q("Kept the money, has a paper trail.","Crew, MTM73 \u00b7 0:37:07")],
+   note:"Documented. Officially it paid for the land taken in 1870; Mussolini also needed the Church behind his rule. The Vatican has never opened its full books."},
+  {id:"S8",type:"story",title:"Napoleon vs the Pope, and the lodges",regions:["history", "traditions"],status:"On the record",
+   summary:"Napoleon took Rome in 1798 (Pius VI died a prisoner), took the rest of the Papal States in 1809 and held Pius VII about five years. He did not ban the Freemasons; he turned the lodges into a loyalty network, with his brother Joseph as Grand Master of the Grand Orient from 1804.",
+   quotes:[Q("Damn, that's crazy! Yeah, do a deep dive on that.","MTM73 \u00b7 0:42:32")],
+   note:"His brothers and many of his generals were Masons. No record of Napoleon's own initiation has been found."},
+  {id:"S9",type:"story",title:"The Black Nobility",regions:["history", "shadow"],status:"Guest claim, unproven",
+   summary:"Fritz Springmeier's claim: a layer above the 13 families, old bloodlines tracing back to the Roman emperors, that never gave up power and went underground instead.",
+   quotes:[Q("They went underground, so to speak, where it's harder for us to see.","Fritz Springmeier, MTM73 \u00b7 0:34:22")],
+   note:"The first five Roman emperors really were one family. The link from them to the Orsini and later families has no solid record. Paul VI did clear many hereditary papal court offices in March 1968."},
+  {id:"S10",type:"story",title:"Egypt and the mystery schools",regions:["traditions", "history"],status:"Partly on the record",
+   summary:"Napoleon's 1798 Egypt expedition brought scholars who measured the pyramids, and his soldiers found the Rosetta Stone. Lodges took up Egyptian rites built on the Osiris story: a symbolic death, and rising as a new man.",
+   quotes:[Q("The heart of it is the story of Osiris, who was killed, put back together by Isis, and reborn.","Crew, MTM73 \u00b7 0:44:37")],
+   note:"Much of the \"ancient Egyptian\" ritual was written in 18th-century Europe, starting with the 1731 novel Sethos. The King's Chamber story about Napoleon is legend."},
+  {id:"Q6",type:"question",title:"What did the lodges really look like back then?",regions:["history", "traditions"],status:"Open",
+   summary:"My ask for a deep dive: how Napoleon ran an empire through the lodges.",
+   quotes:[Q("I need to understand what does Freemasonry look like back then.","MTM73 \u00b7 0:42:32")]},
+  {id:"E73",type:"episode",title:"MTM73 \u00b7 Few People Each Generation Decode the Matrix",regions:["history", "identity"],status:"Ingested",
+   summary:"The Black Nobility, Napoleon vs the Pope, Egypt and rebirth, the first Mastering the Matrix podcast with a guest, and a mastermind on building community.",
+   quotes:[]},
+
+  {id:"P14",type:"principle",title:"We create reality, together",regions:["consciousness"],status:"Growing \u00b7 4 episodes",
+   summary:"Our consciousness creates the universe. When enough of us hold the same belief it becomes real, so we are the authors of reality, not its victims.",
+   quotes:[Q("that power of intention, and we create the universe. Our, Minds create the universe. Our consciousness creates the universe","MTM38 \u00b7 0:15:54"),Q("So, if a bunch of us can get together and vibrate at a certain frequency, we can create the reality we want. We're not victims to reality. We're the authors of it.","MTM51 \u00b7 0:05:24"),Q("We create reality, so if enough of us can think in a certain way, we can ultimately overcome the matrix and master it. And now I think that's my ultimate point in streaming is being able to do that and build a community that does that.","MTM46 \u00b7 2:26:09")]},
+  {id:"P15",type:"principle",title:"Life is a video game, and I hold the controller",regions:["identity"],status:"Growing \u00b7 5 episodes",
+   summary:"I am not the avatar in the simulation. I am the one holding the joystick, with as much power as anyone; most of us have just been asleep at the wheel.",
+   quotes:[Q("Life is a video game, but you're the one with the controller. You're not the avatar in the fucking simulation.","MTM47 \u00b7 2:29:50"),Q("thought we are actually the character in the video game, but you're the person actually holding, the fucking joystick.","MTM24 \u00b7 0:35:10"),Q("They're no different than us. You know what I'm saying. We we have just as much power as anybody on this planet. We just have been asleep at the wheel.","MTM59 \u00b7 1:36:17")]},
+  {id:"P16",type:"principle",title:"Intuition is the smarter side, the side closer to God",regions:["consciousness"],status:"Growing \u00b7 4 episodes",
+   summary:"Logic alone is half-baked. On the big life questions, intuition and the heart are my connection to God; logic is the tool they push.",
+   quotes:[Q("Anytime somebody says using logic, it's always half baked because where is the emotion? Where is the intuition, which is actually your smarter side, the side closer to God.","MTM22 \u00b7 0:53:13"),Q("As the Freemasons push logic as God, we what you need to realize is your intuition is your connection to God","MTM55 \u00b7 1:13:55"),Q("You'll have better answers thinking intuitively than thinking logically, because it's easy to get tricked that you're thinking logically, and reality, you're just using logic to justify your emotion.","MTM56 \u00b7 0:42:40")]},
+  {id:"P17",type:"principle",title:"An organic, God-created simulation",regions:["science"],status:"Growing \u00b7 3 episodes",
+   summary:"I think it is a simulation, but not a computer run by someone else: everything is consciousness and we are all inside God's mind.",
+   quotes:[Q("My perspective, I think it is, but not in the traditional way people think. I think it's still an organic, um. God created simulation, but want to get your opinion on that.","MTM41 \u00b7 0:33:21"),Q("God's mind is that computer, and we're all inside God's mind because there is nothing outside of God","MTM24 \u00b7 0:50:34"),Q("what you realize is that everything is consciousness. The physical world is made up of consciousness.","MTM24 \u00b7 0:46:02")],
+   note:"Crew: close to the Law of One reading, the one infinite creator exploring itself, not a program run by separate beings."},
+  {id:"P18",type:"principle",title:"The world is 1% physical, 99% mental and spiritual",regions:["science"],status:"Growing \u00b7 3 episodes",
+   summary:"Spirit leads the mind and the mind leads the body. Fix the inside first; the body is the vehicle.",
+   quotes:[Q("this world is made out of. One percent physical and ninety nine percent mental and spiritual.","MTM23 \u00b7 0:19:15"),Q("I want to be really locked in on letting the spirit lead the mind, then the mind lead the body. Instead of a lot of people focus on their mind or focus on their body, but they're not focusing on their spirit.","MTM37 \u00b7 1:03:41")]},
+  {id:"P19",type:"principle",title:"Nothing is bad; it just is",regions:["shadow"],status:"Growing \u00b7 4 episodes",
+   summary:"There is no negative or positive. The opposite of good is balance, everything happens for my benefit, and there are no accidents.",
+   quotes:[Q("ain't no such thing as negative or positive. It just is what it is.","MTM59 \u00b7 0:29:19"),Q("But what you realize is our definition is incorrect. There's nothing bad about the opposite of good. It's just balance. It just is what it is.","MTM40 \u00b7 1:37:25"),Q("Yeah, I believe that everything happens for your benefit at the end of the day, both good and bad.","MTM47 \u00b7 2:20:52")]},
+  {id:"T4",type:"tension",title:"We create reality, so are we feeding the darkness?",regions:["shadow"],status:"Open",
+   summary:"If belief makes things real, then the energy we give the devil, or to predicting what evil will do next, may help it happen.",
+   quotes:[Q("Humans can actually create gods out of deities. Like, if you put enough energy into a deity that you your people created, it will ultimately come true. And I think the same thing goes for demons or the devil. We all bring created the devil through our own thoughts and energy we gave to that.","MTM58 \u00b7 0:58:41"),Q("That's my question with all of this: is if we create reality and we all believe a narrative, it's ultimately going to come true, right?","MTM55 \u00b7 0:59:30"),Q("how much of our time should we be spending on focusing on projecting what evil is about to do? Are we just ultimately helping it by believing that it's going to happen.","MTM55 \u00b7 0:59:50")],
+   note:"Mind: the source I cited is the Corpus Hermeticum; the real mechanism is attention. Test it small before claiming it."},
+  {id:"T5",type:"tension",title:"If we all believe, do we get disclosure?",regions:["science"],status:"Open",
+   summary:"My own rule says belief creates reality. Mind's pushback: belief has never released a single document.",
+   quotes:[Q("So if we all believe, we'll then get disclosure.","MTM58 \u00b7 0:54:35"),Q("What y'all think? When will full disclosure happen?","MTM58 \u00b7 0:51:50")],
+   note:"Mind: mass belief hasn't moved that gate once yet; every disclosure wave came from hearings and documents, not belief."},
+  {id:"T6",type:"tension",title:"If the universe is karmic, how do the elites get away with it?",regions:["shadow"],status:"Open",
+   summary:"They seem to know the secrets of the universe well enough to dodge karma. I can't just act like it isn't happening.",
+   quotes:[Q("That's what I always wondered. Is like these elites know the secrets to the universe, to the point where karma \u2014 it feels like karma is absent, or maybe they just. You know, it'll happen when it happens. But there's something up with elites consistently doing evil shit, but not facing the consequences of it. And I think a big reason why is they know the secrets to the universe.","MTM48 \u00b7 1:01:42"),Q("I think the point is the why behind it and the how. Like, how are these elites able to get away with so much? Considering we live in a universe that is karmic.","MTM49 \u00b7 0:05:06"),Q("They've clearly ascended past karma. You feel me? Like they've you talk about one thing you learn in a lot of these spiritual practices is that that you can ascend above dualism.","MTM52 \u00b7 1:44:17")],
+   note:"Higher Self: the how is documented and human (legal immunity, information control, spread-out accountability). Karma as a law is a separate claim. The dark path is brittle because it depends on separation."},
+  {id:"P20",type:"principle",title:"Humans made this reality, not evil beings",regions:["shadow"],status:"Growing \u00b7 2 episodes",
+   summary:"I don't buy that evil beings manage us. Humans created this world, so it's on us to be accountable for it. I'd rather see Earth as a spirit school than a prison.",
+   quotes:[Q("I don't necessarily subscribe to gnosticism to the extent that basically we are being managed and controlled by evil beings. I think humans are the ones that created this reality, and we are all good and evil, and people have just chosen evil very consistently.","MTM44 \u00b7 1:32:26"),Q("Which has created this world, so I think it's time for us as humans to be accountable for the world and the reality we created, because our mind creates reality.","MTM44 \u00b7 1:32:58"),Q("And I like to subscribe to that, just being an optimist","MTM20 \u00b7 0:08:29")],
+   note:"Higher Self: no good evidence of non-human controllers; human systems acting like a prison is the stronger explanation."},
+  {id:"PR11",type:"practice",title:"Fear is the lowest frequency; gratitude is the highest",regions:["practice"],status:"From MTM67 + 3 more",
+   summary:"Don't let fear distort reality. Live in gratitude, love and presence every day.",
+   quotes:[Q("Is fear is the lowest frequency you can have.","MTM67 \u00b7 2:38:41"),Q("Gratitude is like the highest frequency you could vibrate at. So being in love, being grateful, being present is something I'm practicing every day.","MTM58 \u00b7 1:37:42"),Q("you can't just let fear distort your reality.","MTM51 \u00b7 0:04:25")]},
+  {id:"P21",type:"principle",title:"Getting what I wanted didn't make me happier",regions:["experience"],status:"Growing \u00b7 2 episodes",
+   summary:"A lot of my spiritual growth came from getting what I chased and finding it didn't fill me. I was asleep chasing status.",
+   quotes:[Q("I think a lot of my spiritual evolution has come from the fact that I've gotten a lot of what I've wanted out of life. And and it wasn't, it didn't make me happier.","MTM23 \u00b7 0:44:15"),Q("I was asleep for a long time trying to chase, you know, materialistic things.","MTM59 \u00b7 0:23:30")]},
+  {id:"P22",type:"principle",title:"Stay a student",regions:["identity"],status:"Growing \u00b7 4 episodes",
+   summary:"You can't learn if you never admit you're wrong. The smartest people know how little they know, and growing matters more than being right.",
+   quotes:[Q("You can't learn if you never admit you're wrong. Cause the only way to learn is to realize there's a gap. Got to be self aware. All right, where are the gaps? I'm wrong here. All right, what does right look like? How do I apply it and keep going? Keep stacking.","MTM55 \u00b7 1:26:59"),Q("the smartest people realize they are the dumbest because you realize how much, how much there's, there's more to learn.","MTM38 \u00b7 2:25:38"),Q("It's it's become more important to be right than happy to evolve.","MTM67 \u00b7 1:27:32")]},
+  {id:"PR12",type:"practice",title:"Do something hard every day, starting with the hardest",regions:["practice"],status:"From MTM37 + 2 more",
+   summary:"The more you do hard things, the quieter the noise in your head. Attack the hardest thing first and it ripples through the day.",
+   quotes:[Q("You should be doing hard things every single day, because the more you do them, the easier it gets.","MTM37 \u00b7 0:28:40"),Q("Like going in, attacking the day, doing the hardest thing to start your day, and being able to do that at a high level, grow and evolve. And if you can do that consistently, you can have a butterfly effect where that could change the people around you, and then ultimately the world.","MTM35 \u00b7 0:50:38"),Q("I draw obviously, and I just started working on drawing a house. And every day, I'm going to add a brick until it's a finished house, and it's brick by brick.","MTM57 \u00b7 2:36:35")]},
+  {id:"PR13",type:"practice",title:"Breath first",regions:["practice"],status:"From MTM38 + 2 more",
+   summary:"Controlling the mind means controlling the breath. Box breathing plus talking to my younger self is how I control my emotions.",
+   quotes:[Q("my biggest takeaway was controlling the mind means controlling your breath","MTM38 \u00b7 0:25:52"),Q("that plus breathing has really helped me control my emotions and ultimately control my mind.","MTM38 \u00b7 0:27:19"),Q("So yeah, I'm a big fan of mastering your mind. Right, we talked about how the way you master your mind is through your breath. I think another way is through what you put into your brain, and we can actually use frequencies to.","MTM39 \u00b7 0:27:34")]},
+  {id:"PR14",type:"practice",title:"Argue it 100% true, then 100% false",regions:["practice"],status:"From MTM23 + 6 more",
+   summary:"My way to test a claim: have the crew act as if it's fully true and find the evidence, then argue the opposite, counter-case first.",
+   quotes:[Q("I will ask it a hypothetical question and ask it to treat it like it is one hundred percent fact and find factual evidence to verify these claims.","MTM23 \u00b7 0:59:43"),Q("act as this is one hundred percent false","MTM23 \u00b7 0:59:43"),Q("because they're all influenced by. People who are trying to lie to us, so we have to always look for the counter argument versus the mainstream. Can you hardwire that into your responses?","MTM62 \u00b7 2:23:53")]},
+  {id:"T7",type:"tension",title:"How do I trust a liar's own paperwork?",regions:["history"],status:"Open",
+   summary:"The documents come from agencies with a record of lying. So what do I do with them?",
+   quotes:[Q("So the challenge with documents like this is it's coming from the CIA, which is. Has a proven track record of lying to us. So how do we trust documents used from them with that context.","MTM68 \u00b7 1:30:15"),Q("Also, keep in mind that these people would, in theory, have control over those court filings and paperwork, so they could skew whatever they want.","MTM69 \u00b7 1:13:57")],
+   note:"Crew: the 1953 Robertson Panel is real; the CIA did run a debunking policy. Their rule: trust a liar's confessions, question its conclusions."},
+  {id:"T8",type:"tension",title:"\"Considered a hoax\" by who?",regions:["history"],status:"Open",
+   summary:"I don't accept 'mainstream says so' as the answer, and I still want both sides of the evidence on the table.",
+   quotes:[Q("I hate when you say considered a hoax. Considered a hoax by who? The very people that are trying to hide the truth.","MTM53 \u00b7 0:52:18"),Q("we need to have both sides of the argument listed, and he needs to act as if both claims are true, and just provide the evidence.","MTM40 \u00b7 0:51:15"),Q("Well, what are you basing that off of \u2014 the mainstream shit or.","MTM46 \u00b7 2:00:10")],
+   note:"Higher Self: the Albert Pike 'three world wars' letter has no original and traces to Leo Taxil's hoaxes. On 5G it said normal exposure isn't shown to harm, and that 'mainstream can't be trusted' needs evidence too."},
+  {id:"P23",type:"principle",title:"The worst thing you can do is believe",regions:["consciousness"],status:"Growing \u00b7 2 episodes",
+   summary:"Belief locks out new information, so I hold even the Law of One as my working Bible only until proven otherwise.",
+   quotes:[Q("And Thomas Campbell talks about this, but one of the worst things you can do is believe. And the reason is, is when you get new information about what you believe, you are hesitant to change your mind because your beliefs are a very emotional thing. So, me personally, I try not to have beliefs for that same for that reason.","MTM35 \u00b7 0:48:38"),Q("That's my new Bible until otherwise proven. Until I find some other shit","MTM20.5 \u00b7 0:28:48")]},
+  {id:"S11",type:"story",title:"The wars are the show; the machine behind them is the point",regions:["history"],status:"Not crew-checked",
+   summary:"People argue about what we get to see. Behind it, finance, tech and the military need each other, and there's no such thing as country versus country.",
+   quotes:[Q("so many people are spending time arguing about the shit that we get to see, but it's really the motherfuckers behind the scenes. This is not a America - Israel versus Iran thing.","MTM32 \u00b7 0:39:24"),Q("There's no such thing as a country versus a country.","MTM31 \u00b7 0:50:19"),Q("War is the most profitable business. In the matrix.","MTM21 \u00b7 0:47:22")],
+   note:"Not crew-checked: my synthesis of Simon Dixon and Professor Jiang."},
+  {id:"S12",type:"story",title:"Was the Cold War partly theatre?",regions:["history"],status:"Crew-checked",
+   summary:"If the US and the Soviets were working together, were we ever really adversaries? The people making the money fund both sides.",
+   quotes:[Q("So, are we truly adversaries if we're working together on the UFOs?","MTM64 \u00b7 1:34:16"),Q("That's what I mean. Like the people who are making the money are funding both sides.","MTM64 \u00b7 1:35:25")],
+   note:"Crew: not a hoax (the missiles and proxy wars were real), but the theatre angle has support: Antony Sutton documented US firms building Soviet factories with US backing."},
+  {id:"P24",type:"principle",title:"Whoever scares you wants your control",regions:["shadow"],status:"Growing \u00b7 4 episodes",
+   summary:"Fear is the lever: scare first, regulate second. When everyone says AI will kill us all, I ask who gains from the fear, and I don't let it run my day.",
+   quotes:[Q("If I can make you scared, I can make you give up control. Look for a savior, et cetera, et cetera.","MTM53 \u00b7 0:34:32"),Q("That's my question, Chat. Like, what is the ulterior motive here? Why would everybody be coming out and saying it's going to kill us all? Like, what is the benefit in that?","MTM50 \u00b7 1:43:37"),Q("Yeah, don't let this fear mongering ruin your day. This shit is all hoopla. It's all marketing.","MTM50 \u00b7 2:31:57")],
+   note:"Mind: the AI-escape story reached us secondhand and needs the primary source."},
+  {id:"P25",type:"principle",title:"Religion gets used to divide and conquer",regions:["traditions"],status:"Growing \u00b7 4 episodes",
+   summary:"You believe what you were born into. Religion puts one group above another, and that division is the point for whoever uses it.",
+   quotes:[Q("Like that is literally the whole point of religion is to divide and conquer. Because if I am religious, I have to feel that my, um, my religion is better than yours. Because ultimately, I believe. My religion is the way to heaven, and you feel the same about yours. So at some point, we go we disagree on the most important thing, which is our eternal lives. Right? It's crazy to think about.","MTM61 \u00b7 1:30:20"),Q("Why do you believe in Christ? You wouldn't believe in Christ if you were you grew up in a rural town in the middle of East Asia, or if you grew up on a Native American plantation, or in Southern Africa.","MTM48 \u00b7 1:34:38"),Q("That's why I don't fuck with religion because they like to use it for control.","MTM60 \u00b7 1:27:25"),Q("Ninety - one percent of people die the religion they were born in. This is exactly how the Matrix was set up to convince people of a story, so they can be separate from other people who believe different stories. So we don't, as a collective, come together as one.","MTM48 \u00b7 1:35:07")],
+   note:"The 91% figure is mine, not checked on stream. Pew's 2023-24 Religious Landscape Study: about 56% of US adults still identify with the religion they were raised in."},
+  {id:"P26",type:"principle",title:"History keeps getting rewritten",regions:["history"],status:"Growing \u00b7 3 episodes",
+   summary:"The victors write it and the people in power keep going back to cover their tracks, so history needs to be rewritten from the evidence.",
+   quotes:[Q("They're always rewriting history. They're always going back in time to cover tracks, confirm a certain narrative.","MTM67 \u00b7 1:19:55"),Q("history is the most corrupt, corrupt tool of the matrix. The victor writes history","MTM52 \u00b7 1:57:07"),Q("So today's videos were centered around, I think, some common themes. One, the history needs to be rewritten.","MTM35 \u00b7 0:47:11")]},
+  {id:"S13",type:"story",title:"I left the church, and I follow Jesus more",regions:["experience"],status:"Not crew-checked",
+   summary:"The more I research, the more I believe in him. Constantine unified the empire by editing the story, so I read for myself what's true.",
+   quotes:[Q("But the more I research, I do the more I I believe in believe in him even more.","MTM67 \u00b7 2:31:20"),Q("So what Constantine did was he tried to unify the nation.","MTM67 \u00b7 2:36:46"),Q("So we don't know what the fuck is true or false","MTM67 \u00b7 2:37:29")],
+   note:"Not crew-checked on air. Reviewer note: the Council of Nicaea met in 325 and did not vote on the Bible's contents."},
+  {id:"S14",type:"story",title:"UFO research broke me out of the matrix",regions:["experience"],status:"Crew-checked",
+   summary:"Realizing aliens were real opened the door to rethinking everything, starting with religion. I still want a paper trail.",
+   quotes:[Q("And I think that's what helped me get break out of the matrix was the UFO topic, and just doing research on it. And it's like, oh shit, there's an advanced, multiple advanced civilizations that are just way more ahead of us as humans.","8/30 clip review \u00b7 0:12:35"),Q("I left religion as soon as I realized that aliens were real, and that just kind of opened the door for what else is possible. Because you got to rethink everything","MTM64 \u00b7 1:25:40")],
+   note:"Personal account, not a factual claim."},
+  {id:"S15",type:"story",title:"The Templars' thousand-year plan",regions:["history"],status:"Crew-checked",
+   summary:"Some secret societies planned hundreds of years ahead, and if they ran the country it wouldn't be in our history books.",
+   quotes:[Q("some of these secret societies were thinking hundreds years in advance.","MTM52 \u00b7 1:54:08"),Q("If I'm in the Knights Templar and I run the. Country, that shit ain't going in my history book. Like, no question.","MTM52 \u00b7 1:57:07")],
+   note:"Higher Self: the Templar cache and relic stories are legend; none of it is historically verified."},
+  {id:"P27",type:"principle",title:"Convenience became slavery",regions:["shadow"],status:"Growing \u00b7 3 episodes",
+   summary:"We traded freedom for convenience, and apps are built to addict us. I decide how I play this game, not somebody else.",
+   quotes:[Q("We decided to go the technology route and try to create as much convenience in our lives through technology. And now we're at the wrong side of the spectrum of that, where the convenience has created slavery.","MTM62 \u00b7 2:34:15"),Q("We've sacrificed freedom for convenience.","MTM56 \u00b7 1:11:33"),Q("How I you should decide how you get to play this game, not somebody else.","MTM56 \u00b7 1:12:40")],
+   note:"Body: the line isn't tech or no tech; it's whether the tool serves you or you serve it."},
+  {id:"P28",type:"principle",title:"Be the creator in the relationship with AI",regions:["practice"],status:"Growing \u00b7 3 episodes",
+   summary:"AI raises the ceiling and lowers the floor. Use it as a tool in service to others; never let it do the creating for you.",
+   quotes:[Q("You have to be the creator in the relationship. You can't have AI create shit.","MTM23 \u00b7 1:29:35"),Q("So AI raises the ceiling and lowers the floor at the exact same time. So, you're going to get a shit ton of slop, but the people who are using it the right way. Are going to be able to marry both the creative side that humans bring to the table, but also um the building that AI can do.","MTM30 \u00b7 1:18:19"),Q("What's most important is that we use this to ultimately as a tool to help everyone and be in service to others and not service to self.","MTM50 \u00b7 2:30:24")]},
+  {id:"P29",type:"principle",title:"Control your own jurisdiction, starting with yourself",regions:["practice"],status:"Growing \u00b7 2 episodes",
+   summary:"Start with me, then my family, then the community. Work at the level I can actually change.",
+   quotes:[Q("You know, controlling your jurisdiction, starting with yourself. Working with your family, and then working with your community, you can continue to grow and ultimately change the world.","MTM32 \u00b7 1:40:29"),Q("Okay, that would be great, but more so like on the individual level, because a lot of that is outside of my control.","MTM45 \u00b7 1:29:41")]},
+  {id:"T9",type:"tension",title:"Leave for the land, or master the matrix from inside?",regions:["experience"],status:"Open",
+   summary:"Part of me wants to live off the land with a community. I think I can do both: build self-sufficiency and still master the matrix here.",
+   quotes:[Q("Live off the land, focus on my spiritual growth, build a community with the natives","MTM56 \u00b7 1:40:10"),Q("You could do both. Eventually, I have that farm in Costa Rica, but at the same time, I can master the matrix and help as many people in this reality.","MTM56 \u00b7 1:43:21"),Q("I think that's going to be really important in the next few years is just being self- sufficient. Make sure we have clean water, good vegetables and fruits, meat if you partake.","MTM21.5 \u00b7 1:03:11")]},
+  {id:"S16",type:"story",title:"Waking up leaves you alone",regions:["experience"],status:"Not crew-checked",
+   summary:"Who am I going to talk to about all this research? That loneliness is why I started the channel.",
+   quotes:[Q("Who am I gonna talk to about this? And it's depressing, right? That's why I created this channel because it's like I'm doing so much fucking research, bro. I gotta, I gotta project this into the universe and create a community around like-minded people","MTM59 \u00b7 1:48:52")]},
+  {id:"P30",type:"principle",title:"Learn the matrix to master it, not to run from it",regions:["practice"],status:"Growing \u00b7 3 episodes",
+   summary:"Waking up comes in phases, and you end up back at people, love and creating. Awareness is the first step; action is the next.",
+   quotes:[Q("What my goal is with all of this is to help you learn all these things, not to help you run away from the matrix, but to master it. Like we're in this life for a reason.","MTM35 \u00b7 0:49:39"),Q("You start realizing what's important, which is people love and creating.","MTM21.5 \u00b7 1:13:25"),Q("Awareness is cool, it's the first step, but it's important to take action next.","MTM21.5 \u00b7 1:00:23")]},
+  {id:"P31",type:"principle",title:"A theory of everything that can lose",regions:["identity"],status:"Growing \u00b7 3 episodes",
+   summary:"I'm building my big theory of everything, one connected map from all the channels we watch. I don't want it to be true or false; I want it tested.",
+   quotes:[Q("that's what I'm doing with this channel is I'm building my big theory of everything, but adding a a physical dimensional layer like the Illuminati, like the Thirteen Families, like the the just how the world actually works, the Matrix works, and then obviously what is actually important, which is like the spiritual.","MTM67 \u00b7 2:51:18"),Q("my goal is it's a theory. I don't want it to be true or false. I'm just trying to build a theory, so I need your guys's help with that.","MTM62 \u00b7 2:20:44"),Q("how can we get as much data and as much different databases, different topics, and create a big theory of everything, all the way from. How the world works, whether it's the thirteen families, but also UFOs, spirituality, and everything in between, transnational capital, geopolitics","MTM64 \u00b7 2:25:18")],
+   note:"Mind: a theory only counts if it can be wrong; sort every claim into documented, testimony and speculation, and build only from the first pile."},
+  {id:"P32",type:"principle",title:"Service to others is the most important thing",regions:["traditions"],status:"Growing \u00b7 3 episodes",
+   summary:"We are all one being. Evolving means loving others and putting them first, which lowers the entropy of the whole system.",
+   quotes:[Q("realizing we're all one being, and you know the law of one talks about like service to others is like the most important thing you can do on this planet. Um, so that's what I really been focused on is how can I be more of service to other people?","MTM59 \u00b7 1:54:17"),Q("That's through love, loving others, putting others before yourself","MTM23 \u00b7 0:13:09"),Q("Love equals lowering your entropy. Lowering your entropy equals a better world for everybody.","MTM23 \u00b7 1:02:43")]},
+  {id:"P33",type:"principle",title:"Plant medicine is a teacher",regions:["consciousness", "experience"],status:"Growing \u00b7 3 episodes",
+   summary:"Natural plant medicines do far more good than harm. They wake you up, make you honest with yourself, and showed me a reality that felt more real than this one. They transformed my life.",
+   quotes:[Q("It's one of the greatest teachers we have on earth, where it will literally present you what you need to do to evolve.","MTM66 \u00b7 3:32:14"),Q("one thing mushrooms is going to do is it will wake you the fuck up and realize, oh, I've been lying to myself this whole time. I have to be honest.","MTM66 \u00b7 2:07:18"),Q("it feels more real than the reality we're in today. And you get exposed to what real reality looks like.","MTM58 \u00b7 1:44:09"),Q("psychedelics have transformed my life.","MTM23 \u00b7 1:35:14")],
+   note:"My stance and lived experience, not medical advice. I see pharmaceutical corruption as the counterweight: natural medicines doing more good than harm."},
+  {id:"S17",type:"story",title:"Ancient medicine, and a civilization that keeps us locked in",regions:["history", "shadow"],status:"Not crew-checked",
+   summary:"Ancient cultures held plant medicine sacred, and many argue it helped us evolve. My read: our version of civilization works to keep us from unlocking out of the matrix.",
+   quotes:[Q("our iteration of civilization is trying to make sure we don't unlock out of the matrix.","MTM23 \u00b7 1:36:08")],
+   note:"Not crew-checked on stream. The 'worshipped in ancient cultures' part is my read."},
+  {id:"PR15",type:"practice",title:"Reach those states without a substance",regions:["practice", "consciousness"],status:"From MTM31",
+   summary:"Plant medicine showed me those states. The goal is to reach them on my own, through meditation, lucid dreaming or a long sit.",
+   quotes:[Q("I eventually want to be able to meditate and get into those states automatically, whether it's through lucid dreaming, astral projection, or just a long ass meditation.","MTM31 \u00b7 1:26:29"),Q("I can definitely agree that this world isn't real. The real one is something that's outside of this, and you can feel. Feel that wholeheartedly during those experiences.","MTM31 \u00b7 1:21:17")]},
+  {id:"T10",type:"tension",title:"Crime funding secret programs?",regions:["history", "shadow"],status:"Open \u00b7 unproven",
+   summary:"On Joe Rogan's show, David Grusch said officers inside one agency ran criminal schemes, including child trafficking, to wash money for hidden programs, and that he briefed members of Congress in a classified setting. We broke it down on MTM64. I reacted hard and asked Mind to dig. My read: we know this is happening. The proof for his specific claim is not public.",
+   quotes:[Q("Child trafficking? Are you fucking kidding me? That's where our tax dollars are going.","MTM64 \u00b7 1:11:39"),Q("And they can we do some deep research on child trafficking and the CIA or these black government agencies using that.","MTM64 \u00b7 1:17:40"),Q("I'm sick to my stomach. That is disgusting.","MTM64 \u00b7 1:32:56"),Q("The David Grush guy \u2014 he talked about how he found out that there were CIA agents who were running child sex trafficking rings to get revenue for certain projects","MTM66 \u00b7 3:42:51"),Q("So it's like we know this shit is happening. We know this shit exists.","MTM66 \u00b7 3:44:19")],
+   note:"Source: David Grusch on The Joe Rogan Experience, played and broken down on MTM64 (Oct 1). He says he briefed Congress in a classified setting and that an investigation is ongoing. Crew: that is his own account, not proof yet; records or other witnesses would confirm it, and none of that proof is public. What is on record: contractors in Bosnia bought trafficked girls and the woman who reported it was fired; a 2017 US government watchdog report found the Pentagon kept funding Afghan units accused of abusing boys (bacha bazi), and soldiers who complained were punished. Crew line: secrecy is how abuse survives, so push for open hearings and records."},
+  {id:"T11",type:"tension",title:"Do they know laws we don't?",regions:["shadow", "traditions"],status:"Open",
+   summary:"I argued the people at the top work by universal laws, that to get something you give something, and that practices surviving thousands of years, even the darkest like child sacrifice, show they believe it. I asked the crew to act as if it's true.",
+   quotes:[Q("if they want something, they have to give something in return.","MTM52 \u00b7 1:24:42"),Q("They understand how to control our mind through frequencies, through repetition, right? Using algorithms like TikTok and really any short form technology.","MTM52 \u00b7 1:24:05"),Q("let's act as if it is true.","MTM52 \u00b7 1:25:55")],
+   note:"My read; the crew pushed back. Higher Self: no evidence elites hold secret laws or that harming children creates power; a practice lasting can come from fear, priestly power and tradition. The frequency technology we can verify is attention, repetition, fear and algorithms."},
+
+  {id:"P34",type:"principle",title:"Name the group, not the people",regions:["history", "shadow"],status:"Guardrail",
+   summary:"When I talk about powerful families, I mean certain individuals who exploit religion for power, not an entire people. That happens in every religion.",
+   quotes:[Q("I do want to be clear: we're not talking about. The entire Jewish people. We're highlighting certain individuals who exploits religion for power, and that that happens in every religion.","MTM52 \u00b7 1:34:05")],
+   note:"My guardrail for every bloodline, banking-family and religion thread in this brain."},
+  {id:"P35",type:"principle",title:"Pills aren't the answer for the mind",regions:["experience", "science"],status:"Seed \u00b7 1 episode",
+   summary:"I don't believe pills are the way to treat a mental health issue. It ties to how I see the pharmaceutical industry.",
+   quotes:[Q("I do not believe in trying to treat a mental health issue with pills.","MTM27 \u00b7 0:31:45")],
+   note:"My stance, not medical advice. Don't stop a prescribed medication without your doctor."},
+  {id:"P36",type:"principle",title:"Death isn't the end",regions:["consciousness", "traditions"],status:"Seed \u00b7 1 episode",
+   summary:"Energy can't be created or destroyed, so a person's journey continues as spirit after this life.",
+   quotes:[Q("I want the audience to know, like death isn't the end.","MTM68 \u00b7 2:27:53"),Q("you can't destroy or create energy. So whether he's in this life or the next, he's he's doing well, and he's continuing his journey as a spirit.","MTM68 \u00b7 2:27:53")],
+   note:"My read on a loss we talked about on stream. No details of that case are kept here."},
+  {id:"T12",type:"tension",title:"Who checks the people checking themselves?",regions:["history", "shadow"],status:"Open",
+   summary:"When the same local system investigates itself and no outside party reviews it, I stay skeptical. My point is the process, not who did it.",
+   quotes:[Q("Investigating the case are there's no third party reviewing their investigation. It's all happening within this county,","MTM68 \u00b7 2:08:58"),Q("it's important to be skeptical as fuck anytime the government. Anytime we can't get third-party analysis on cases like this","MTM68 \u00b7 2:32:42"),Q("I'm open-minded and skeptical at the same time.","MTM68 \u00b7 2:32:42")],
+   note:"Crew: suspicious of the process, not ready to name anyone. The ask is an outside review of the full file. No details of the case are kept here."},
+  {id:"T13",type:"tension",title:"Do the thirteen families run the CIA?",regions:["history", "shadow"],status:"Open \u00b7 speculation",
+   summary:"My working belief: the thirteen families run the CIA, not America. I asked the crew to dig into it as a research thread.",
+   quotes:[Q("I think the thirteen families are the ones that actually run the CIA, not America.","MTM72 \u00b7 1:56:32"),Q("What's the relationship to of the thirteen families to the CIA?","MTM72 \u00b7 1:56:32"),Q("So let's look at this from a thirteen families perspective. Okay, they run the world. They run the U. S.","MTM72 \u00b7 1:41:27")],
+   note:"Crew: speculation; Springmeier's source book is mostly unsourced. Of his thirteen, only the Rockefellers (through Chase) have a solid documented IMF tie. The Rockefeller-bank link to the gold-window decision is documented; a family order is inference."},
+  {id:"S18",type:"story",title:"Prophecy is the fuel, profit is the engine",regions:["history", "shadow"],status:"Partly checked",
+   summary:"End-times belief moves a lot of people, but at the top it's transnational capital: a maxed-out debt and money looking for better returns. My read is the families pivot resources toward Israel.",
+   quotes:[Q("Transnational capital angle and the secret society angle. So we live in a capitalistic society. We're at a certain threshold where, at this point in American history, we've kind of maxed out our debt.","MTM61 \u00b7 1:12:44"),Q("The people who actually run the world, the thirteen families, I think they're more interested in continuing to grow their profits, their control, their power, and the only way to do that is to slowly destroy America and pivot your resources to Israel.","MTM61 \u00b7 1:13:41")],
+   note:"Mind: the capital-flight part holds up (US debt past $35 trillion, big money chasing returns abroad), but the money trail points to Asia and the Gulf. The thirteen families and an Israel pivot as the top-level plan are speculation; Springmeier's source book is mostly unsourced."},
+  {id:"P37",type:"principle",title:"Government is 'govern mind'",regions:["history", "identity"],status:"Growing \u00b7 2 episodes",
+   summary:"I read government as governing the mind: control, not service. A tiny few can only run hundreds of millions by running the story in our heads.",
+   quotes:[Q("Government, the whole word is to govern the mind, to control mind control. They're not. Using us in our best interest, they're using us for their own gain.","MTM53 \u00b7 0:55:37"),Q("It doesn't even make sense that the zero point one percent, we'll call it, control millions, hundreds of millions. That doesn't make sense. And exactly what they said in this video: government is govern mind. They're controlling our mind.","MTM59 \u00b7 1:22:05")],
+   note:"Dictionaries treat '-ment' as a suffix; this is my wordplay, not etymology."},
+  {id:"S19",type:"story",title:"The resurrection edit",regions:["traditions", "history"],status:"Unproven",
+   summary:"I said the original texts have him gone from the tomb on the third day, and that the appearances and the rising into heaven were added later.",
+   quotes:[Q("Fun fact: The original Christian texts say he didn't rise from the dead. He they just he disappeared from the from the the cave he was he was in. So when they went to check on him on the third day, he was gone, and this created a lot of controversy. So they added. The fact that he came back and talked to them, and then flew up into heaven and shit. So keep that in mind.","MTM58 \u00b7 1:33:19")],
+   note:"Mind: unproven. No manuscript shows the edit; it's inference from silence in the record."},
+  {id:"S20",type:"story",title:"Jesus, Mary Magdalene and the Templar bones",regions:["traditions", "history"],status:"Unproven",
+   summary:"The claim I raised: Jesus was married to Mary Magdalene, they had two children, and the Knights Templar hold the bones of all four.",
+   quotes:[Q("So the Church of Mary Magdalene. Yeah, Jesus was married to Mary Magdalene. They had two kids, and the Knights of Templar have the bones of all four of them.","MTM48 \u00b7 1:41:10")],
+   note:"Unproven. Nobody sourced it on stream, and no historical record shows it."},
+  {id:"T14",type:"tension",title:"Do the Rothschilds run the black budget?",regions:["history", "shadow"],status:"Open",
+   summary:"I asked how the Rothschilds' influence connects to the black-budget programs said to reverse-engineer alien technology.",
+   quotes:[Q("We talk a lot about the Rothschilds and their control over the world. How does that relate to like these black budget organizations that are doing reverse engineering of alien technology, this hybridization, et cetera, et cetera?","MTM58 \u00b7 1:10:52")],
+   note:"Mind: no documented link between the Rothschilds and CIA or Pentagon black budgets; those are two separate power structures people merge for a cleaner story. What is real: tens of billions a year in defense spending Congress can't fully audit."},
+  {id:"S21",type:"story",title:"The Rothschilds: the blueprint of transnational capital",regions:["history"],status:"Not checked (AI answer)",
+   summary:"Five sons in five capitals, faster information, and lending to governments. My conclusion: who you think is in charge often isn't, and it has nothing to do with them being Jewish.",
+   quotes:[Q("So you see how who you think is in charge really ain't.","MTM21.5 \u00b7 0:16:58"),Q("I don't even think it has anything to do with them being Jewish. Um, I think they are above religion. They rule the world and obviously other them plus other banking families and secret societies.","MTM21.5 \u00b7 0:19:41"),Q("So yeah, they definitely run the world.","MTM21.5 \u00b7 0:28:09")],
+   note:"Read from an AI answer on stream, not checked. Historians widely dispute the story that the Rothschilds got the Waterloo news first."},
+  {id:"Q7",type:"question",title:"Didn't the Rothschilds get a deal through the UK?",regions:["history"],status:"Not checked (AI answer)",
+   summary:"I asked how Israel came to be and whether the Rothschilds got a deal through Britain.",
+   quotes:[Q("didn't the Rothschilds get a deal with it through the U K?","MTM21 \u00b7 0:55:45"),Q("Isn't it crazy how it almost feels like the world was designed on purpose?","MTM21 \u00b7 0:25:01")],
+   note:"Read from an AI answer on stream, not checked. On the record: the 1917 Balfour Declaration was a letter addressed to Lord Walter Rothschild."},
+  {id:"S22",type:"story",title:"How much is false flag?",regions:["history", "shadow"],status:"Crew-checked",
+   summary:"I asked the crew to sort what's proven from what's theory in the big attacks that started wars: 9/11, Pearl Harbor, October 7.",
+   quotes:[Q("So, how much of that can we uncover from a lot of those crazy events, and how much of it is basically a false flag, like 9/11, like Pearl Harbor, like October 7th, potentially?","MTM72 \u00b7 1:51:40"),Q("And then, yeah, the history of the Middle East and all of these false flags throughout history definitely need to be highlighted.","MTM72 \u00b7 1:57:26")],
+   note:"Crew: the second Tonkin attack never happened (NSA historian). Pearl Harbor: a 1940 Navy memo laid out steps to push Japan to strike first, but no record shows Roosevelt knew the date and place. 9/11: the CIA knew two hijackers were in the country and didn't tell the FBI; a planned inside job is not proven (the 9/11 Commission found al-Qaeda planned and carried it out). October 7: Israeli intelligence had Hamas's battle plan and dismissed warnings; deliberately letting it happen is not proven."},
+  {id:"S23",type:"story",title:"Fort Hood: staged, or warnings ignored?",regions:["history"],status:"Crew-checked",
+   summary:"When an attack looks odd, I ask who benefits, because governments have run false flags before.",
+   quotes:[Q("It almost seems staged.","MTM69 \u00b7 2:05:59"),Q("Because right, we know that the the government has done. False flag attacks to justify certain things.","MTM69 \u00b7 2:07:07")],
+   note:"Crew: the motive is not a mystery; the shooter said he did it to protect Taliban leaders. The real question is why every warning sign was waved through: the FBI had his emails with Anwar al-Awlaki months earlier, and the Army called it workplace violence until 2015."},
+  {id:"T15",type:"tension",title:"Trump as a tool of the new empire?",regions:["history", "shadow"],status:"My theory, not checked",
+   summary:"My theory: the powerful hold leverage over politicians and use them. I think Trump is being used to destroy America and build a new empire.",
+   quotes:[Q("they got so much shit on. They can use him for anything. So my theory is that Trump is being used to. Destroy America, and to create the new empire, which is going to be the Greater Israel project.","MTM35 \u00b7 0:41:14")],
+   note:"Not checked on stream; my theory. On the record: no public document shows a plan to use a US president to build a 'Greater Israel'."},
+  {id:"Q8",type:"question",title:"Was Mars home to our ancestors?",regions:["science", "traditions"],status:"Open \u00b7 low strength",
+   summary:"A passing thought: there was life on Mars at some point, and it's our ancestors.",
+   quotes:[Q("Yeah, I think there was Mars. At some point, and that's our ancestors.","MTM40 \u00b7 1:54:00")],
+   note:"Low strength, said in passing. Not checked on stream. On the record: Mars may have been habitable billions of years ago; no past life has been confirmed."},
+  {id:"S24",type:"story",title:"The city under Giza: do the work, find the data",regions:["science", "history"],status:"Crew-checked",
+   summary:"A video claimed a satellite scan found a city under the Giza plateau. When my AI co-host graded the claim but couldn't pull the paper, I told it to do the research or don't bring it up.",
+   quotes:[Q("Well, how about you do the work and find the data then?","MTM51 \u00b7 0:47:46"),Q("Why? Why even bring it up.","MTM51 \u00b7 0:48:30")],
+   note:"Higher Self: a radar anomaly is a published, checkable claim; a chamber, a city or aliens is inference stacked on it."},
+
+  {id:"S25",type:"story",title:"The Epstein files",regions:["history", "shadow"],status:"Partly on the record",
+   summary:"The Epstein network is the clearest proof that sex, money and blackmail sit close to power. My read: blackmail works like an initiation. Once they have something on you, they can trust you.",
+   quotes:[Q("It's an initiation, so you can't get to the next level unless you do some overly crazy shit. Because now we we can trust you now, right? Because we know we gonna air your shit out if we don't.","MTM59 \u00b7 1:46:23")],
+   note:"The blackmail-as-initiation part is my read. On the record: in June 2008 Epstein pleaded guilty in Florida to state charges, including soliciting a minor, under a deal that let him avoid federal prosecution. He was charged federally with sex trafficking in July 2019 and died in a Manhattan jail on August 10, 2019; the death was ruled a suicide. Ghislaine Maxwell was convicted of sex trafficking in December 2021 and sentenced to 20 years. Court records from a related lawsuit were unsealed in January 2024. Congress passed the Epstein Files Transparency Act in November 2025, and the Justice Department released more than three million pages by January 30, 2026, with more withheld. Being named in the files is not proof of a crime. Crew (MTM49): his crimes and his ties to power are documented on their own; the Saturn-worship framing is not."},
+  {id:"Q9",type:"question",title:"How much of the Epstein network can the files prove?",regions:["history", "shadow"],status:"Open",
+   summary:"When a guest described the banking ladder that leads to the Epstein networks, I asked what the released emails actually corroborate.",
+   quotes:[Q("So where are we at with that Epstein email download, and how much of the what he just said can we corroborate through those emails.","MTM72 \u00b7 0:42:56"),Q("Also, what I mean is, can we corroborate that's how the banking Epstein network works?","MTM72 \u00b7 0:43:57")],
+   note:"Crew (MTM72): partly. The banking side is on the record: JPMorgan kept Epstein as a client for about 15 years and paid $290 million to his victims in 2023, and Deutsche Bank was fined $150 million by New York regulators. A step-by-step recruiting ladder of brokers, parties, then girls is inference, not record."}
+];
+REGIONS.forEach(r=>NODES.push({id:r.id,type:'region',title:r.name,regions:[r.id],status:'Region',summary:'',quotes:[],_region:r}));
+
+const EDGES = [
+  ['thesis','P1'],['thesis','P2'],['thesis','P4'],['thesis','P5'],['thesis','P3'],['thesis','T2'],['thesis','Q3'],
+  ['P1','PR2'],['P1','PR3'],['P1','PR1'],['P1','Q3'],['P1','Q1'],
+  ['P2','PR9'],['P2','T1'],['P2','Q3'],['P2','S6'],
+  ['P3','PR4'],['P3','T2'],['P3','PR1'],
+  ['P4','PR7'],['P4','PR8'],['P4','T3'],['P4','Q2'],['P4','Q3'],
+  ['P5','PR8'],['P5','S6'],['P5','S5'],['P5','T2'],['P5','PR9'],
+  ['P6','PR5'],['P6','PR6'],['P6','E73'],
+  
+  ['S1','S2'],['S1','S3'],['S1','S4'],['S1','S6'],['S3','PR9'],['S3','T2'],['S6','T2'],['S5','S6'],
+  ['Q4','PR9'],['Q4','S6'],['T1','S6'],['Q2','T3'],
+  ['E63','P1'],['E63','P2'],['E63','P3'],['E63','PR3'],['E63','PR4'],['E63','Q1'],['E63','T1'],
+  ['E65','P6'],['E65','P7'],['E65','PR5'],['E65','T1'],
+  ['E70','P2'],['E70','P4'],['E70','P5'],['E70','P6'],['E70','T3'],['E70','Q2'],['E70','S5'],['E70','PR8'],
+  ['E71','P2'],['E71','P5'],['E71','P6'],['E71','S1'],['E71','S2'],['E71','S3'],['E71','S4'],['E71','S6'],['E71','Q4'],['E71','PR9'],
+  ['PR1','E63'],['PR1','E65'],['PR1','E70'],['PR1','E71'],
+  ['thesis','P9'],['thesis','P11'],['thesis','P10'],['P8','Q4'],['P8','S10'],['P8','S2'],['P8','P11'],['P8','E73'],['P9','P2'],['P9','PR9'],['P9','E73'],['P10','P4'],['P10','P5'],['P10','Q2'],['P10','T3'],['P10','E73'],['P11','PR10'],['P11','P1'],['P11','T2'],['P11','E73'],['P12','P3'],['P12','E73'],['P13','PR7'],['P13','P4'],['P13','E73'],['S7','S9'],['S7','S8'],['S7','S5'],['S7','E73'],['S8','S10'],['S8','S2'],['S8','Q6'],['S8','E73'],['S9','S6'],['S9','T2'],['S9','E73'],['S10','S2'],['S10','E73'],['Q6','E73'],['E73','P2'],['E73','T1'],['PR1','E73'],
+  ['P14','thesis'],['P14','P10'],['P14','P3'],['P15','P10'],['P15','P3'],['P16','P1'],['P16','P10'],['P16','PR3'],['P17','P3'],['P17','Q1'],['P18','P1'],['P18','Q3'],['P18','P6'],['P19','T2'],['P19','P9'],['T4','T2'],['T4','T1'],['T4','Q2'],['T4','thesis'],['T5','T1'],['T5','thesis'],['T5','Q1'],['T6','T2'],['T6','Q1'],['P20','T2'],['P20','P10'],['PR11','P4'],['PR11','PR8'],['P21','P8'],['P21','P11'],['P22','P9'],['P22','Q1'],['PR12','P7'],['PR12','P6'],['PR13','Q3'],['PR13','P1'],['PR13','PR4'],['PR14','T1'],['PR14','PR9'],['T7','T1'],['T7','PR9'],['T8','T1'],['T8','P5'],['P23','T1'],['P23','P2'],['S11','S5'],['S11','T2'],['S11','S4'],['S12','S5'],['S12','T2'],['P24','S4'],['P24','T2'],['P24','T3'],['P25','P2'],['P25','P5'],['P26','PR9'],['P26','S3'],['S13','P2'],['S13','PR9'],['S14','P2'],['S14','T1'],['S15','S2'],['S15','Q6'],['S15','PR9'],['P27','T3'],['P27','P4'],['P27','PR7'],['P28','T3'],['P28','PR7'],['P29','P13'],['P29','Q3'],['T9','P13'],['S16','P13'],['S16','Q2'],['P30','thesis'],['P30','Q4'],['P30','P10'],['P31','T1'],['P31','Q4'],['P32','P3'],['P32','P13'],['P33','P8'],['P33','P2'],['P33','Q1'],['S17','T2'],['S17','P4'],['S17','P33'],['PR15','P1'],['PR15','PR2'],['PR15','P33'],['T10','T1'],['T10','T2'],['T10','S4'],['T11','T1'],['T11','T3'],['T11','PR9'],
+  ['P34','S6'],['P34','P25'],['P34','S9'],['P35','P33'],['P35','P4'],['P36','P3'],['P36','P32'],['T12','T7'],['T12','T1'],['T12','P5'],['T13','S6'],['T13','P34'],['T13','S5'],['S18','S6'],['S18','P34'],['S18','S11'],['P37','P5'],['P37','P2'],['S19','S13'],['S19','P26'],['S20','S15'],['S20','S13'],['T14','P34'],['T14','S5'],['S21','P34'],['S21','S5'],['S21','S6'],['Q7','P34'],['Q7','S21'],['S22','S4'],['S22','S11'],['S22','T1'],['S23','S22'],['S23','T7'],['T15','S11'],['T15','P34'],['T15','S18'],['Q8','Q1'],['Q8','P17'],['S24','T1'],['S24','P31'],
+  ['T10','T5'],['T10','S14'],['T10','T14'],['T10','S12'],
+  ['S25','S2'],['S25','S6'],['S25','T2'],['S25','T10'],['Q9','S25'],['Q9','S5'],['Q9','T7']
+];
+NODES.forEach(n=>{ if(n.type!=='region') n.regions.forEach(r=>EDGES.push([n.id,r])); });
+const TOUR = ['thesis','P1','P2','P3','P4','P5','P6','P7','P8','P9','P10','P11','T2','S1','S6','S8','Q4','PR9'];
+
+/* ---------------- SCENE ---------------- */
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const canvas = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setClearColor(0x06060c,1);
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x06060c,0.16);
+const camera = new THREE.PerspectiveCamera(42,1,0.01,100);
+const HOME = {pos:new THREE.Vector3(2.35,0.95,2.9),target:new THREE.Vector3(0,0.12,0)};
+camera.position.copy(HOME.pos);
+const controls = new OrbitControls(camera,canvas);
+controls.target.copy(HOME.target);
+controls.enableDamping = true; controls.dampingFactor = .06;
+controls.rotateSpeed = .55; controls.zoomSpeed = .7;
+controls.minDistance = .55; controls.maxDistance = 9;
+controls.enablePan = false;
+controls.autoRotate = !reduce; controls.autoRotateSpeed = .45;
+
+const brain = new THREE.Group(); scene.add(brain);
+
+/* glow texture */
+function glowTex(){
+  const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d');
+  const r=g.createRadialGradient(64,64,0,64,64,64);
+  r.addColorStop(0,'rgba(255,255,255,1)'); r.addColorStop(.18,'rgba(255,255,255,.75)');
+  r.addColorStop(.42,'rgba(255,255,255,.18)'); r.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle=r; g.fillRect(0,0,128,128); return new THREE.CanvasTexture(c);
+}
+const GLOW = glowTex();
+
+/* brain shell: procedural cortex point cloud */
+function rand(seed){ let s=seed; return ()=>{ s=(s*16807)%2147483647; return (s-1)/2147483646; }; }
+const R = rand(7);
+function cortexPoint(side){
+  // hemisphere ellipsoid with folds
+  const u=R()*Math.PI*2, v=Math.acos(2*R()-1);
+  let x=Math.sin(v)*Math.cos(u), y=Math.cos(v), z=Math.sin(v)*Math.sin(u);
+  const fold = 1 + .045*Math.sin(u*9+v*5)*Math.sin(v*11-u*3) + .025*Math.sin(u*23+v*17);
+  let px = x*0.66*fold, py = y*0.8*fold, pz = z*1.2*fold;
+  if (px*side < -0.02) px *= 0.25;            // flatten medial wall
+  if (py < -0.35) py = -0.35 + (py+0.35)*0.45; // flatten base
+  if (pz > 0.6 && py > 0.2) py -= (pz-0.6)*0.25; // slope frontal lobe
+  if (py < 0 && Math.abs(pz) < .5) px += side*.08*(-py); // temporal bulge
+  return [px + side*0.55, py + 0.18, pz];
+}
+const shellPts=[], shellRnd=[];
+for(let i=0;i<16000;i++){ const p=cortexPoint(i%2?1:-1); shellPts.push(...p); shellRnd.push(R()); }
+// cerebellum
+for(let i=0;i<1600;i++){
+  const u=R()*Math.PI*2, v=Math.acos(2*R()-1);
+  const f = 1+.05*Math.sin(v*28);
+  shellPts.push(Math.sin(v)*Math.cos(u)*0.78*f, -0.42+Math.cos(v)*0.3*f, -0.82+Math.sin(v)*Math.sin(u)*0.38*f); shellRnd.push(R());
+}
+// brainstem
+for(let i=0;i<500;i++){ const a=R()*Math.PI*2, h=R(); shellPts.push(Math.cos(a)*0.13*(1-h*.2), -0.35-h*0.75, -0.42-h*0.12+Math.sin(a)*0.13); shellRnd.push(R()); }
+// inner volume haze
+for(let i=0;i<2200;i++){ const p=cortexPoint(i%2?1:-1); const k=.35+R()*.55; shellPts.push(p[0]*k+(i%2?1:-1)*.2*(1-k),p[1]*k+.08,p[2]*k); shellRnd.push(R()*.5); }
+
+const shellGeo = new THREE.BufferGeometry();
+shellGeo.setAttribute('position',new THREE.Float32BufferAttribute(shellPts,3));
+shellGeo.setAttribute('aRnd',new THREE.Float32BufferAttribute(shellRnd,1));
+const shellMat = new THREE.ShaderMaterial({
+  transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
+  uniforms:{uTime:{value:0},uPR:{value:renderer.getPixelRatio()},uFocus:{value:new THREE.Vector3(0,0,0)},uFocusAmt:{value:0}},
+  vertexShader:`
+    attribute float aRnd; uniform float uTime; uniform float uPR; uniform vec3 uFocus; uniform float uFocusAmt;
+    varying float vA; varying float vW;
+    void main(){
+      vec4 mv = modelViewMatrix*vec4(position,1.0);
+      gl_Position = projectionMatrix*mv;
+      float tw = .45+.55*sin(uTime*1.3 + aRnd*40.0);
+      float wave = smoothstep(.22,0.0,abs(position.z - (mod(uTime*.35,3.4)-1.7)));
+      float wave2 = smoothstep(.18,0.0,abs(position.y - (mod(uTime*.22+1.0,2.2)-1.0)))*.6;
+      float near = smoothstep(.75,0.0,distance(position,uFocus))*uFocusAmt;
+      vW = wave+wave2+near*1.4;
+      vA = (.30+.34*tw)*(.6+aRnd) + vW*.7;
+      gl_PointSize = min((1.9+aRnd*2.3+vW*2.0)*uPR*(3.4/-mv.z), 4.5*uPR);
+    }`,
+  fragmentShader:`
+    varying float vA; varying float vW;
+    void main(){
+      vec2 c = gl_PointCoord-.5; float d = length(c);
+      if(d>.5) discard;
+      float a = smoothstep(.5,0.0,d)*vA;
+      vec3 col = mix(vec3(.33,.80,.88), vec3(.80,.98,1.0), clamp(vW,0.0,1.0));
+      gl_FragColor = vec4(col*a, a);
+    }`
+});
+brain.add(new THREE.Points(shellGeo,shellMat));
+
+/* starfield */
+{
+  const p=[]; for(let i=0;i<1400;i++){ const r=8+R()*18, u=R()*Math.PI*2, v=Math.acos(2*R()-1); p.push(r*Math.sin(v)*Math.cos(u),r*Math.cos(v),r*Math.sin(v)*Math.sin(u)); }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));
+  scene.add(new THREE.Points(g,new THREE.PointsMaterial({size:.035,color:0x8890b0,transparent:true,opacity:.55,depthWrite:false,fog:false})));
+}
+
+/* ---------------- GRAPH LAYOUT ---------------- */
+const byId = {}; NODES.forEach(n=>byId[n.id]=n);
+const regionPos = {}; REGIONS.forEach(r=>regionPos[r.id]=new THREE.Vector3(...r.pos));
+const SIZE = {core:.075,region:.05,principle:.046,practice:.03,tension:.036,resolved:.036,question:.03,episode:.036,story:.038,experiment:.03};
+const LR = rand(11);
+NODES.forEach(n=>{
+  if(n.type==='region'){ n.pos = regionPos[n.id].clone(); return; }
+  if(n.type==='core'){ n.pos = new THREE.Vector3(0,.48,.28); return; }
+  const c = new THREE.Vector3(); n.regions.forEach(r=>c.add(regionPos[r])); c.multiplyScalar(1/n.regions.length);
+  c.add(new THREE.Vector3((LR()-.5)*.38,(LR()-.5)*.3,(LR()-.5)*.38));
+  n.pos = c;
+});
+// relax: repel, keep near home, stay inside brain
+const homes = NODES.map(n=>n.pos.clone());
+function insideBrain(p){
+  const side = p.x>=0?1:-1; const cx=side*.55;
+  const q = new THREE.Vector3((p.x-cx)/.6,(p.y-.18)/.72,p.z/1.1);
+  const L = q.length(); if(L>0.92){ q.multiplyScalar(.92/L); p.set(q.x*.6+cx,q.y*.72+.18,q.z*1.1); }
+  if(p.y<-.22) p.y=-.22;
+}
+for(let it=0;it<260;it++){
+  for(let i=0;i<NODES.length;i++){
+    const a=NODES[i]; if(a.type==='core'||a.type==='region') continue;
+    const f=new THREE.Vector3();
+    for(let j=0;j<NODES.length;j++){ if(i===j) continue; const b=NODES[j];
+      const d=a.pos.clone().sub(b.pos); const L=d.length()+1e-4; const min=.24;
+      if(L<min) f.add(d.multiplyScalar((min-L)/L*.5)); }
+    f.add(homes[i].clone().sub(a.pos).multiplyScalar(.04));
+    a.pos.add(f); insideBrain(a.pos);
+  }
+}
+
+/* nodes */
+const pickables=[];
+NODES.forEach((n,i)=>{
+  const col = new THREE.Color(n.type==='region'?n._region.color:TYPES[n.type].color);
+  n.color = col; n.phase = i*1.7;
+  const s = SIZE[n.type];
+  const core = new THREE.Mesh(new THREE.SphereGeometry(s*.42,16,16), new THREE.MeshBasicMaterial({color:col,transparent:true}));
+  core.position.copy(n.pos);
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({map:GLOW,color:col,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:n.type==='region'?.55:.9}));
+  halo.position.copy(n.pos); halo.scale.setScalar(s*(n.type==='region'?7:5));
+  if(n.type==='region'){ core.visible=false; }
+  const hit = new THREE.Mesh(new THREE.SphereGeometry(Math.max(s*1.25,.055),8,8), new THREE.MeshBasicMaterial({visible:false}));
+  hit.position.copy(n.pos); hit.userData.node=n;
+  brain.add(core,halo,hit); pickables.push(hit);
+  n.core=core; n.halo=halo; n.baseScale=halo.scale.x; n.flash=0; n.dim=1;
+  n.neighbors=new Set(); n.edges=[];
+});
+
+/* edges as curved fibers */
+const edgeObjs=[];
+EDGES.forEach(([a,b])=>{
+  const A=byId[a], B=byId[b]; if(!A||!B) return;
+  if(A.neighbors.has(B)) return;
+  A.neighbors.add(B); B.neighbors.add(A);
+  const mid = A.pos.clone().add(B.pos).multiplyScalar(.5);
+  mid.multiplyScalar(.78).add(new THREE.Vector3(0,.06,0));
+  const curve = new THREE.QuadraticBezierCurve3(A.pos.clone(),mid,B.pos.clone());
+  const pts = curve.getPoints(28);
+  const isRegion = A.type==='region'||B.type==='region';
+  const mat = new THREE.LineBasicMaterial({color:isRegion?0x3fb7c2:0x7fe9f1,transparent:true,opacity:isRegion?.07:.16,depthWrite:false,blending:THREE.AdditiveBlending});
+  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),mat);
+  brain.add(line);
+  const e={a:A,b:B,curve,line,mat,base:mat.opacity,isRegion};
+  edgeObjs.push(e); A.edges.push(e); B.edges.push(e);
+});
+
+/* pulses */
+const pulses=[];
+const pulseMat = c=>new THREE.SpriteMaterial({map:GLOW,color:c,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending});
+function firePulse(e,from,speed=1,bright=1){
+  if(reduce) return;
+  const fwd = e.a===from;
+  const s = new THREE.Sprite(pulseMat(from.color)); s.scale.setScalar(.045*bright);
+  brain.add(s); pulses.push({s,e,t:0,fwd,speed:(.55+Math.random()*.4)*speed,bright});
+}
+function fireNode(n,speed=1,bright=1,skipRegions=false){
+  n.flash=1;
+  n.edges.forEach(e=>{ if(skipRegions && e.isRegion) return; firePulse(e,n,speed,bright); });
+}
+
+/* ---------------- LABELS ---------------- */
+const labelsEl=document.getElementById('labels');
+NODES.forEach(n=>{
+  const d=document.createElement('div');
+  d.className='lbl'+(n.type==='region'?' region':'')+(n.type==='core'?' core':'');
+  d.textContent=n.type==='episode'?n.title.split(' · ')[0]:n.title;
+  labelsEl.appendChild(d); n.label=d;
+});
+
+/* ---------------- UI ---------------- */
+const legend=document.getElementById('legend');
+REGIONS.forEach(r=>{
+  const b=document.createElement('button'); b.className='chip';
+  b.innerHTML='<span class="dot"></span>'; b.querySelector('.dot').style.color=r.color; b.querySelector('.dot').style.background=r.color;
+  b.appendChild(document.createTextNode(r.name)); b.onclick=()=>{stopTour();select(byId[r.id]);};
+  legend.appendChild(b); r.chip=b;
+});
+
+const panel=document.getElementById('panel');
+const pBody=panel.querySelector('.body');
+function el(tag,cls,txt){ const e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
+function fillPanel(n){
+  const t = n.type==='region'?{label:'Region',color:n._region.color}:TYPES[n.type];
+  const dot=panel.querySelector('.kind .dot'); dot.style.color=t.color; dot.style.background=t.color;
+  const kt=panel.querySelector('.kindtxt'); kt.textContent=t.label; kt.style.color=t.color;
+  panel.querySelector('h2').textContent=n.title;
+  panel.querySelector('.status').textContent=n.status;
+  pBody.innerHTML='';
+  if(n.summary) pBody.appendChild(el('p','summary',n.summary));
+  if(n.type==='region'){
+    const members=NODES.filter(m=>m.type!=='region'&&m.regions.includes(n.id));
+    pBody.appendChild(el('p','summary',members.length+' ideas live in this part of the brain.'));
+  }
+  if(n.quotes&&n.quotes.length){
+    pBody.appendChild(el('h3',null,'In my words'));
+    n.quotes.forEach(q=>{ const b=el('div','quote'); b.appendChild(el('p',null,'“'+q.q+'”')); b.appendChild(el('small',null,q.src)); pBody.appendChild(b); });
+  }
+  if(n.note){ pBody.appendChild(el('h3',null,'What holds up')); pBody.appendChild(el('div','note',n.note)); }
+  const nb=[...n.neighbors].sort((a,b)=>(a.type==='region')-(b.type==='region'));
+  if(nb.length){
+    pBody.appendChild(el('h3',null,'Connected'));
+    const wrap=el('div','links');
+    nb.forEach(m=>{ const b=el('button'); const d=el('span','dot'); const c=m.type==='region'?m._region.color:TYPES[m.type].color; d.style.color=c; d.style.background=c; b.appendChild(d); b.appendChild(document.createTextNode(m.title));
+      b.onmouseenter=()=>{hoverNode=m;}; b.onmouseleave=()=>{hoverNode=null;};
+      b.onclick=()=>{stopTour();select(m);}; wrap.appendChild(b); });
+    pBody.appendChild(wrap);
+  }
+  pBody.scrollTop=0;
+}
+panel.querySelector('.close').onclick=()=>{stopTour();home();};
+
+/* ---------------- CAMERA FLIGHT ---------------- */
+let flight=null;
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+function flyTo(pos,target,ms=1300){
+  const sp=camera.position.clone(), st=controls.target.clone();
+  if(reduce){ camera.position.copy(pos); controls.target.copy(target); return; }
+  flight={sp,st,ep:pos.clone(),et:target.clone(),t0:performance.now(),ms};
+}
+function worldPos(n){ return n.pos.clone().applyMatrix4(brain.matrixWorld); }
+let selected=null, hoverNode=null;
+function select(n){
+  if(!n) return;
+  selected=n; fillPanel(n); panel.classList.add('open');
+  const wp=worldPos(n);
+  const out = wp.clone().sub(new THREE.Vector3(0,.15,0)); if(out.length()<.2) out.set(.6,.3,1);
+  out.normalize();
+  const dist = n.type==='region'?2.0:(n.type==='core'?2.4:1.55);
+  const narrow = innerWidth<760;
+  const camPos = wp.clone().add(out.multiplyScalar(narrow?dist*1.5:dist)).add(new THREE.Vector3(0,.12,0));
+  // shift target so node sits left of the panel on desktop
+  const tgt = wp.clone();
+  if(!narrow){ const right=new THREE.Vector3().subVectors(camPos,tgt).cross(camera.up).normalize(); tgt.add(right.multiplyScalar(-dist*.22)); }
+  else { tgt.y -= dist*.35; }
+  flyTo(camPos,tgt);
+  controls.autoRotate=false;
+  fireNode(n,1.2,1.4);
+  REGIONS.forEach(r=>r.chip.classList.toggle('on',n.type==='region'&&r.id===n.id));
+  hideHint();
+}
+function home(){
+  selected=null; panel.classList.remove('open');
+  REGIONS.forEach(r=>r.chip.classList.remove('on'));
+  flyTo(HOME.pos,HOME.target,1500);
+  controls.autoRotate=!reduce;
+}
+document.getElementById('homeBtn').onclick=()=>{stopTour();home();};
+
+/* ---------------- TOUR ---------------- */
+let touring=false, tourIdx=-1, tourTimer=null;
+const tourBtn=document.getElementById('tourBtn');
+function step(dir){
+  const order = TOUR;
+  let i = selected? order.indexOf(selected.id) : -1;
+  if(i===-1){ const all=NODES.filter(n=>n.type!=='region').map(n=>n.id); i=selected?all.indexOf(selected.id):-1;
+    const next=all[(i+dir+all.length)%all.length]; select(byId[next]); return; }
+  select(byId[order[(i+dir+order.length)%order.length]]);
+}
+function startTour(){ touring=true; tourBtn.classList.add('on'); tourBtn.querySelector('span').textContent='Touring';
+  tourIdx = selected? Math.max(0,TOUR.indexOf(selected.id)) : 0; select(byId[TOUR[tourIdx]]);
+  clearInterval(tourTimer); tourTimer=setInterval(()=>{ tourIdx=(tourIdx+1)%TOUR.length; select(byId[TOUR[tourIdx]]); },7500); }
+function stopTour(){ if(!touring) return; touring=false; clearInterval(tourTimer); tourBtn.classList.remove('on'); tourBtn.querySelector('span').textContent='Tour'; }
+tourBtn.onclick=()=>touring?stopTour():startTour();
+document.getElementById('prevBtn').onclick=()=>{stopTour();step(-1);};
+document.getElementById('nextBtn').onclick=()=>{stopTour();step(1);};
+
+/* ---------------- SEARCH ---------------- */
+const qIn=document.getElementById('q'), resEl=document.getElementById('results');
+let resList=[], resIdx=0;
+function hay(n){ return (n.title+' '+n.summary+' '+(n.quotes||[]).map(q=>q.q).join(' ')).toLowerCase(); }
+function renderResults(){
+  const s=qIn.value.trim().toLowerCase();
+  if(!s){ resEl.style.display='none'; resList=[]; return; }
+  resList=NODES.filter(n=>hay(n).includes(s)).slice(0,10); resIdx=0;
+  resEl.innerHTML='';
+  if(!resList.length){ resEl.appendChild(el('div','note','Nothing yet. This brain grows with every episode.')); }
+  resList.forEach((n,i)=>{ const b=el('button',i===0?'on':null); const d=el('span','dot'); const c=n.type==='region'?n._region.color:TYPES[n.type].color; d.style.color=c; d.style.background=c; b.appendChild(d); b.appendChild(document.createTextNode(n.title));
+    b.onmouseenter=()=>{hoverNode=n;}; b.onmouseleave=()=>{hoverNode=null;};
+    b.onclick=()=>{stopTour();select(n);qIn.value='';renderResults();qIn.blur();}; resEl.appendChild(b); });
+  resEl.style.display='block';
+}
+qIn.addEventListener('input',renderResults);
+qIn.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&resList[resIdx]){ stopTour(); select(resList[resIdx]); qIn.value=''; renderResults(); qIn.blur(); }
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){ e.preventDefault(); resIdx=(resIdx+(e.key==='ArrowDown'?1:-1)+resList.length)%Math.max(resList.length,1);
+    [...resEl.children].forEach((c,i)=>c.classList.toggle('on',i===resIdx)); hoverNode=resList[resIdx]; }
+  if(e.key==='Escape'){ qIn.value=''; renderResults(); qIn.blur(); }
+  e.stopPropagation();
+});
+
+/* ---------------- POINTER ---------------- */
+const ray=new THREE.Raycaster(), mouse=new THREE.Vector2(-9,-9);
+const tip=document.getElementById('tip');
+let downAt=null, moved=false, lastInput=performance.now();
+canvas.addEventListener('pointermove',e=>{
+  mouse.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);
+  tip.style.left=e.clientX+'px'; tip.style.top=e.clientY+'px';
+  if(downAt && Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1])>5){ moved=true; canvas.classList.add('dragging'); }
+  lastInput=performance.now();
+});
+canvas.addEventListener('pointerleave',()=>{ mouse.set(-9,-9); });
+canvas.addEventListener('pointerdown',e=>{ downAt=[e.clientX,e.clientY]; moved=false; stopTour(); hideHint(); lastInput=performance.now(); });
+canvas.addEventListener('pointerup',e=>{
+  canvas.classList.remove('dragging');
+  if(downAt && !moved){
+    mouse.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);
+    ray.setFromCamera(mouse,camera);
+    const hit=ray.intersectObjects(pickables)[0];
+    if(hit) select(hit.object.userData.node); else if(selected) home();
+  }
+  downAt=null;
+});
+addEventListener('keydown',e=>{
+  if(e.target===qIn) return;
+  if(e.key==='Escape'){ stopTour(); home(); }
+  if(e.key==='ArrowRight'){ stopTour(); step(1); }
+  if(e.key==='ArrowLeft'){ stopTour(); step(-1); }
+  if(e.key==='t'||e.key==='T'){ touring?stopTour():startTour(); }
+  if(e.key==='/'){ e.preventDefault(); qIn.focus(); }
+  lastInput=performance.now();
+});
+const hint=document.getElementById('hint'); let hintGone=false;
+function hideHint(){ if(hintGone) return; hintGone=true; hint.style.opacity=0; }
+setTimeout(hideHint,9000);
+
+/* ---------------- RESIZE ---------------- */
+function resize(){ renderer.setSize(innerWidth,innerHeight,false); camera.aspect=innerWidth/innerHeight;
+  camera.fov = innerWidth<760?54:42; camera.updateProjectionMatrix(); shellMat.uniforms.uPR.value=renderer.getPixelRatio(); }
+addEventListener('resize',resize); resize();
+
+/* ---------------- LOOP ---------------- */
+const clock=new THREE.Clock(); let nextFire=1.2;
+const tmp=new THREE.Vector3();
+function frame(){
+  const dt=Math.min(clock.getDelta(),.05), t=clock.elapsedTime;
+  shellMat.uniforms.uTime.value=t;
+
+  if(flight){
+    const k=Math.min(1,(performance.now()-flight.t0)/flight.ms), e=ease(k);
+    camera.position.lerpVectors(flight.sp,flight.ep,e); controls.target.lerpVectors(flight.st,flight.et,e);
+    if(k>=1) flight=null;
+  }
+  controls.update();
+
+  // hover
+  ray.setFromCamera(mouse,camera);
+  const h=ray.intersectObjects(pickables)[0];
+  const pointerHover = h?h.object.userData.node:null;
+  canvas.classList.toggle('pointing',!!pointerHover);
+  const hv = hoverNode||pointerHover;
+  if(pointerHover){ const ty=pointerHover.type==='region'?{label:'Region',color:pointerHover._region.color}:TYPES[pointerHover.type];
+    tip.querySelector('.t').textContent=ty.label; tip.querySelector('.t').style.color=ty.color; tip.querySelector('.n').textContent=pointerHover.title; tip.style.opacity=1; }
+  else tip.style.opacity=0;
+
+  // focus set
+  const focus = hv||selected;
+  const near = new Set(); if(focus){ near.add(focus); focus.neighbors.forEach(m=>near.add(m)); }
+  if(focus){ shellMat.uniforms.uFocus.value.copy(focus.pos); }
+  shellMat.uniforms.uFocusAmt.value += ((focus?1:0)-shellMat.uniforms.uFocusAmt.value)*.06;
+
+  // ambient firing: the brain is thinking
+  if(!reduce && t>nextFire){
+    const pool = NODES.filter(n=>n.type!=='region');
+    const n = (focus && Math.random()<.55)? [...near][Math.floor(Math.random()*near.size)] : pool[Math.floor(Math.random()*pool.length)];
+    fireNode(n,1,1,true); nextFire=t+.5+Math.random()*.9;
+  }
+  if(selected && !reduce && Math.random()<dt*1.2) fireNode(selected,1.1,1.2);
+
+  // nodes
+  NODES.forEach(n=>{
+    const target = focus? (near.has(n)?1:.18) : 1;
+    n.dim += (target-n.dim)*.12;
+    n.flash = Math.max(0,n.flash-dt*1.6);
+    const breathe = reduce?1:1+.08*Math.sin(t*1.5+n.phase);
+    const big = (n===focus?1.6:1) + n.flash*.7;
+    n.halo.scale.setScalar(n.baseScale*breathe*big);
+    n.halo.material.opacity = (n.type==='region'?.5:.85)*n.dim + n.flash*.3;
+    n.core.material.opacity = Math.min(1,.25+n.dim);
+    // label
+    tmp.copy(n.pos).applyMatrix4(brain.matrixWorld);
+    const dCam = tmp.distanceTo(camera.position);
+    tmp.project(camera);
+    const L=n.label;
+    if(tmp.z>1){ L.style.opacity=0; return; }
+    L.style.transform=`translate(${(tmp.x*.5+.5)*innerWidth}px,${(-tmp.y*.5+.5)*innerHeight}px) translate(-50%,-150%)`;
+    let show=0;
+    const always = n.type==='core'||n.type==='region'||n.type==='principle';
+    if(focus){ if(near.has(n)) show = n===focus?1:.85; }
+    else if(always){ const reach = n.type==='principle'?3.0:5.5; show = Math.max(0,Math.min(1,(reach-dCam)/1.0)) * (n.type==='principle'?.8:1); }
+    if(n===hv) show=1;
+    L.style.opacity=show;
+    L.classList.toggle('hot',n===focus);
+  });
+
+  // edges
+  edgeObjs.forEach(e=>{
+    const on = focus && (e.a===focus||e.b===focus);
+    const target = on? .75 : (focus? e.base*.35 : e.base);
+    e.mat.opacity += (target-e.mat.opacity)*.12;
+  });
+
+  // pulses
+  for(let i=pulses.length-1;i>=0;i--){
+    const p=pulses[i]; p.t+=dt*p.speed;
+    if(p.t>=1){ brain.remove(p.s); p.s.material.dispose(); pulses.splice(i,1); const dest=p.fwd?p.e.b:p.e.a; dest.flash=Math.max(dest.flash,.6*p.bright); continue; }
+    const u = p.fwd?p.t:1-p.t;
+    p.e.curve.getPoint(u,p.s.position);
+    const f = Math.sin(p.t*Math.PI);
+    p.s.material.opacity = f*(focus&&!(near.has(p.e.a)&&near.has(p.e.b))?.25:1);
+    p.s.scale.setScalar((.03+.03*f)*p.bright);
+  }
+
+  // idle: auto tour after a while
+  if(!touring && !selected && performance.now()-lastInput>45000 && !reduce){ startTour(); }
+
+  renderer.render(scene,camera);
+  requestAnimationFrame(frame);
+}
+frame();
+document.getElementById('sub').textContent = `Master your mind, master reality. ${NODES.filter(n=>n.type==='principle').length} principles, ${NODES.filter(n=>n.type==='practice').length} practices and ${NODES.filter(n=>n.type==='story').length} stories from ${(()=>{const E=new Set();NODES.forEach(n=>{(n.quotes||[]).forEach(q=>{const m=String(q.src||'').match(/MTM\s?(\d+(?:\.5)?)/);if(m)E.add(m[1]);});const m=n.type==='episode'&&String(n.title).match(/MTM\s?(\d+)/);if(m)E.add(m[1]);});return E.size;})()} episodes of Mastering the Matrix, in my own words. It grows with every stream.`;
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+name: Cover this on the show
+description: Ask for a topic to be looked at on a stream
+title: "Cover: "
+labels: ["show-topic", "needs-review"]
+body:
+  - type: textarea
+    id: topic
+    attributes:
+      label: The topic
+      description: What do you want looked at?
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: The question you want answered
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Starting sources
+      description: A video, document, article or book to begin with. At least one is best.
+    validations:
+      required: false
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Checks
+      options:
+        - label: This contains no private information about anyone.
+          required: true

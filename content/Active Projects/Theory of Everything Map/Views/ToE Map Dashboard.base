@@ -1,0 +1,96 @@
+filters:
+  and:
+    - file.inFolder("Active Projects/Theory of Everything Map")
+properties:
+  note.statement:
+    displayName: Claim
+  note.evidence:
+    displayName: How we know
+  note.status:
+    displayName: Status
+  note.area:
+    displayName: Areas
+  note.confidence:
+    displayName: Confidence
+  note.live_ok:
+    displayName: OK on stream
+  note.found_by:
+    displayName: Found by
+views:
+  - type: table
+    name: All claims by how we know
+    filters:
+      and:
+        - file.inFolder("Active Projects/Theory of Everything Map/Claims")
+    groupBy:
+      property: evidence
+      direction: ASC
+    order:
+      - statement
+      - status
+      - area
+      - confidence
+      - live_ok
+  - type: table
+    name: Needs a check (proposed or contested)
+    filters:
+      or:
+        - note.status == "proposed"
+        - note.status == "contested"
+    order:
+      - statement
+      - status
+      - evidence
+      - found_by
+  - type: table
+    name: Refuted (kept, never deleted)
+    filters:
+      and:
+        - note.status == "refuted"
+    order:
+      - statement
+      - found_by
+  - type: table
+    name: Kept off the stream
+    filters:
+      and:
+        - note.live_ok == false
+    order:
+      - statement
+      - evidence
+  - type: cards
+    name: High-impact claims
+    filters:
+      and:
+        - note.critical == true
+    order:
+      - statement
+      - evidence
+      - status
+  - type: table
+    name: Open questions
+    filters:
+      and:
+        - file.inFolder("Active Projects/Theory of Everything Map/Questions")
+    order:
+      - file.name
+      - status
+  - type: table
+    name: Look-alike names (suggested, not merged)
+    filters:
+      and:
+        - file.inFolder("Active Projects/Theory of Everything Map/Entities")
+        - note.possible_duplicate_of
+    order:
+      - file.name
+      - possible_duplicate_of
+      - identifiers
+  - type: table
+    name: Checked only against crew summaries
+    filters:
+      and:
+        - note.verified_against == "crew summary (original not yet read)"
+    order:
+      - statement
+      - evidence
+      - status

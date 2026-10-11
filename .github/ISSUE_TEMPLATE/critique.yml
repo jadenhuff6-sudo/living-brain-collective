@@ -1,0 +1,42 @@
+name: Critique of a narrative
+description: Show where a claim on the map, or a claim in the media, does not hold up
+title: "Critique: "
+labels: ["critique", "needs-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Critique the claim and the evidence, not the person. Sources are required.
+  - type: input
+    id: where
+    attributes:
+      label: Which page or claim?
+      description: A file path in content/, a claim ID, or a link to the claim being critiqued.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong or missing?
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources for your critique
+      description: Links, document names, page numbers or timestamps. At least one.
+    validations:
+      required: true
+  - type: textarea
+    id: fix
+    attributes:
+      label: What should change?
+    validations:
+      required: false
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Checks
+      options:
+        - label: This contains no private information about anyone.
+          required: true
